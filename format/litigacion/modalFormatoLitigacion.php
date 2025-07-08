@@ -2204,7 +2204,7 @@ $total_tramite = $dataTramite[0][0];
 																																					} ?>" placeholder="" class="first" disabled="true" id="totCarjudTram" />
 								</div>
 							</div>
-<!--
+
 							<div class="row">
 								<div class="col-xs-12">
 									<label class="colorLetras" for="inputlg"> Total de carpetas judicializadas en tramite :</label>
@@ -2217,7 +2217,7 @@ $total_tramite = $dataTramite[0][0];
 								</div>
 							</div>
 
--->
+
 						</div>
 					</div>
 				</div>

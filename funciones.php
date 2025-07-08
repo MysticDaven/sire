@@ -3461,3 +3461,27 @@ function getDataDocumet($conn , $idEnlace , $idTipoArch){
 		return $arreglo;
 	}
 }
+
+function getMpsEnlaceUnidadFormatoMigrarTramite($conn, $idEnlace, $idFormato, $idMp)
+{
+
+    $query = "SELECT mp.idMp, mp.nombre, mp.paterno, mp.materno, mpu.idUnidad, cu.nUnidad
+
+FROM mp INNER JOIN mpUnidad mpu ON mpu.idMp = mp.idMp INNER JOIN CatUnidad cu ON cu.idUnidad = mpu.idUnidad WHERE mpu.idEnlace = $idEnlace AND mp.estatus = 'VI' AND idFormato = $idFormato AND mp.idMp NOT IN ($idMp) ORDER BY cu.nUnidad ASC";
+
+    $indice = 0;
+
+    $stmt = sqlsrv_query($conn, $query);
+    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+
+        $arreglo[$indice][0] = $row['nombre'];
+        $arreglo[$indice][1] = $row['paterno'];
+        $arreglo[$indice][2] = $row['materno'];
+        $arreglo[$indice][3] = $row['idUnidad'];
+        $arreglo[$indice][4] = $row['idMp'];
+        $indice++;
+    }
+    if (isset($arreglo)) {
+        return $arreglo;
+    }
+}

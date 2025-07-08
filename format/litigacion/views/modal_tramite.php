@@ -14,6 +14,11 @@ if (isset($_POST["anio"])) { $anio = $_POST["anio"]; }
 if (isset($_POST["idUnidad"])) { $idUnidad = $_POST["idUnidad"]; }
 if (isset($_POST["estatus"])) { $estatus = $_POST["estatus"]; }
 
+$idUsuario = $_SESSION['useridIE'];
+
+$enlace = getInfoEnlaceUsuario($conn, $idUsuario);
+$idEnlace = $enlace[0][0];
+$idfisca = $enlace[0][1];
 
 $bandImputado = 0;
 
@@ -92,6 +97,7 @@ $idUsuario = $_SESSION['useridIE'];
             <table id="gridTramite" class="display table table-striped  table-hover" style="width:100%" >
                 <thead>
                 <tr class="cabeceraConsultaTramite">
+                    <th><input type="checkbox" id="selectAllCarpetas" /></th> <!-- NUEVO -->
                     <th class="col-xs-1 col-sm-1 col-md-1 textCent">No</th>
                     <th class="col-xs-4 col-sm-4 col-md-4 textCent">NUC </th>
                     <th class="col-xs-6 col-sm-6 col-md-6 textCent">Expediente</th>
@@ -137,6 +143,9 @@ $idUsuario = $_SESSION['useridIE'];
 
                         ?>
                             <tr>
+                                <td class="textCent">
+                                    <input type="checkbox" class="tdRowMainData negr checkCarpeta" value="<?php echo $idEstatusNucsThisNUC; ?>">
+                                </td>
                                 <td class="tdRowMainData negr"><? echo ($sumador + 1); ?></td>
                                 <td class="tdRowMainData negr"><? echo $nuc; ?></td>
                                 <td class="tdRowMainData negr"><? echo $exp; ?></td>
@@ -188,6 +197,28 @@ $idUsuario = $_SESSION['useridIE'];
 
                 </tbody>
             </table>
+
+            <div class="row" style="margin-top: 20px;">
+                <div class="col-md-8">
+                    <label><b>Selecciona el nuevo Ministerio Público:</b></label>
+                    <select id="nuevoMp" class="form-control redondear">
+                        <option value="">Seleccione un Ministerio Público</option>
+                        <?php
+                        // Rellenar con lista de MPs disponibles
+                        $mps = getMpsEnlaceUnidadFormatoMigrarTramite($conn, $idEnlace, 4, $idMp);
+                        for ($i = 0; $i < sizeof($mps); $i++) { ?>
+                            <option value="<?php echo $mps[$i][4]; ?>"><?php echo $mps[$i][0]." ".$mps[$i][1]." ".$mps[$i][2] ?></option>
+                       <?php
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="col-md-4" style="margin-top: 25px;">
+                    <button class="btn btn-success btn-block redondear" onclick="migrarCarpetasSeleccionadas(<? echo $idMp; ?>, <? echo $estatus; ?>, <? echo $mes; ?>, <? echo $anio; ?>, <? echo $idUnidad; ?>);">
+                        <span class="glyphicon glyphicon-random"></span> Migrar seleccionadas
+                    </button>
+                </div>
+            </div>
 
         </div>
 

@@ -40,6 +40,9 @@ for ($i = 0; $i < sizeof($carpeAgente); $i++) {
     }
     ?>
     <tr>
+        <td class="textCent">
+            <input type="checkbox" class="tdRowMainData negr checkCarpeta" value="<?php echo $idEstatusNucsThisNUC; ?>">
+        </td>
         <td class="tdRowMainData negr"><?php echo ($sumador + 1); ?></td>
         <td class="tdRowMainData negr"><?php echo $nuc; ?></td>
         <td class="tdRowMainData negr"><?php echo $exp; ?></td>

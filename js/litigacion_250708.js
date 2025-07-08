@@ -2678,6 +2678,13 @@ function sendDataModalTramite(inputCant, estatus, idMp, mes, anio, idUnidad) {
 
             // Cuando el modal ya es visible, entonces inicializa DataTables
             $('#modal_tramite').on('shown.bs.modal', function () {
+
+                //Carga evento de los checkBox para migrar carpetas
+                document.getElementById("selectAllCarpetas").addEventListener("change", function () {
+                    const checkboxes = document.querySelectorAll(".checkCarpeta");
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                });
+
                 dataTable_iniciar_tramite();
             });
         }
@@ -2997,16 +3004,17 @@ function dataTable_iniciar_tramite(){
         dom: 'Blfrtip',
 
         columnDefs: [
-            { targets: 0, width: "50px" },   // No
-            { targets: 1, width: "130px" },  // Número de caso
-            { targets: 2, width: "150px" },  // Expediente
-            { targets: 3, width: "110px" },  // Causa Penal
-            { targets: 4, width: "110px" },  // Cuaderno antecedentes
-            { targets: 5, width: "80px" },   // Requerimiento (SI/NO)
-            { targets: 6, width: "80px" },   // Archivo sede judicial (SI/NO)
-            { targets: 7, width: "250px" },  // Imputado(s)
-            { targets: 8, width: "70px" },   // Acción 1
-            { targets: 9, width: "70px" }    // Acción 2
+            { targets: 0, width: "10px" },   // No
+            { targets: 1, width: "50px" },   // No
+            { targets: 2, width: "130px" },  // Número de caso
+            { targets: 3, width: "150px" },  // Expediente
+            { targets: 4, width: "110px" },  // Causa Penal
+            { targets: 5, width: "110px" },  // Cuaderno antecedentes
+            { targets: 6, width: "80px" },   // Requerimiento (SI/NO)
+            { targets: 7, width: "80px" },   // Archivo sede judicial (SI/NO)
+            { targets: 8, width: "250px" },  // Imputado(s)
+            { targets: 9, width: "70px" },   // Acción 1
+            { targets: 10, width: "70px" }    // Acción 2
         ],
         lengthMenu: [[10, 25, 50, -1],
             ['10', '25', '50', 'todo']
@@ -3016,7 +3024,7 @@ function dataTable_iniciar_tramite(){
             title: '',
             messageTop: 'Información obtenida del Sistema Integral de Registro Estadístico (SIRE).',
             exportOptions: {
-                columns: [ 0, 1, 2, 3 , 4, 5, 6, 7]
+                columns: [ 1, 2, 3 , 4, 5, 6, 7, 8]
             }
         },
             {
@@ -3025,7 +3033,7 @@ function dataTable_iniciar_tramite(){
                 orientation: 'landscape',
                 messageTop: 'Información obtenida del Sistema Integral de Registro Estadístico (SIRE).',
                 exportOptions: {
-                    columns: [ 0, 1, 2, 3, 4, 5, 6, 7]
+                    columns: [ 1, 2, 3, 4, 5, 6, 7, 8]
                 },
                 customize: function ( doc ) {
                     doc.content.splice( 1, 0, {
@@ -3470,4 +3478,61 @@ function deleteTramiteCarpeta(idEstatusNucs, idMp, anio, mes, estatus, nuc, idUn
         }
     });
 
+}
+
+function migrarCarpetasSeleccionadas(idMp, estatus, mes, anio, idUnidad) {
+    const nuevoMp = document.getElementById("nuevoMp").value;
+
+    if (!nuevoMp) {
+        swal("Advertencia", "Por favor selecciona un nuevo Ministerio Público destino.", "warning");
+        return;
+    }
+
+    const seleccionadas = [];
+    document.querySelectorAll(".checkCarpeta:checked").forEach(cb => {
+        seleccionadas.push(cb.value);
+    });
+
+    if (seleccionadas.length === 0) {
+        swal("Sin selección", "Selecciona al menos una carpeta para migrar.", "info");
+        return;
+    }
+
+    swal({
+        title: "¿Estás seguro?",
+        text: `Se migrarán ${seleccionadas.length} carpeta(s) al nuevo MP.`,
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, migrar",
+        cancelButtonText: "Cancelar"
+    }, function(isConfirmed) {
+        if (isConfirmed) {
+            $.ajax({
+                url: 'format/litigacion/views/migrarTramiteCarpeta.php',
+                method: 'POST',
+                data: {
+                    carpetas: seleccionadas,
+                    nuevoMp: nuevoMp
+                },
+                dataType: 'json',
+                success: function(response) {
+                    swal.close(); // Cierra el swal de confirmación anterior
+                    setTimeout(function(){
+                        if(response.success){
+                            swal("¡Trámite actualizado!" , response.message , "success");
+                            actualizarTablaTramites(idMp, estatus, mes, anio, idUnidad);
+                        }else{
+                            swal("Error", response.message , "error");
+                        }
+                    },100);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    swal("Error", "Hubo un problema al migrar las carpetas.", "error");
+                }
+            });
+        }
+    });
 }

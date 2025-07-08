@@ -673,8 +673,8 @@ function getDistincCarpetasAgenteDetemrn20Lit($conn, $idMp, $mes, $anio,  $deten
 																SELECT no_averiguacion FROM estatusAveriguaciones 
 					WHERE idMp = $idMp AND mes = $mes AND anio = $anio AND  idEstatus = $estatus AND idUnidad = $idUnidad  ";
 		}
-		else if ($estatus == 165 ) {
-			$query = "  SELECT nuc FROM estatusNucs WHERE idMp = $idMp AND  idEstatus = $estatus ";
+		else if ($estatus == 181 ) {
+			$query = "  SELECT nuc FROM estatusNucs WHERE idMp = $idMp AND  idEstatus = $estatus AND idUnidad = $idUnidad";
 		} else {
 			$query = "  SELECT DISTINCT nuc FROM estatusNucs 
 			  WHERE idMp = $idMp AND mes = $mes AND anio = $anio AND  idEstatus = $estatus AND idUnidad = $idUnidad  Group BY nuc, idEstatus";

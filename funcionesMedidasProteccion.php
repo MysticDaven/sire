@@ -48,7 +48,7 @@ function getDataMP($connMedidas, $rolUser, $idEnlace){
 	                 ,mp.nombre+' '+mp.paterno+' '+mp.materno AS nombreMP
 		                ,mp.idUnidad
 		                ,mp.idFiscalia
-										  FROM SIRE.medidas.mp 
+										  FROM medidas.mp 
 										  WHERE mp.estatus = 'VI' and mp.idUnidad = 1 ";
 	}else{
 		$query = " SELECT
@@ -56,7 +56,7 @@ function getDataMP($connMedidas, $rolUser, $idEnlace){
 	                 ,mp.nombre+' '+mp.paterno+' '+mp.materno AS nombreMP
 		                ,mp.idUnidad
 		                ,mp.idFiscalia
-										  FROM SIRE.medidas.mp 
+										  FROM medidas.mp 
 										  WHERE mp.idEnlace = $idEnlace AND mp.estatus = 'VI' ";
 	}
 	
@@ -146,35 +146,6 @@ function dataDelitosSicap($conSic){
 	if(isset($arreglo)){return $arreglo;}
 }
 
-function getDataGenerales($connMedidas, $idMedida, $tipoConsulta, $idCuadernoAntecedentes){
-	if($tipoConsulta == 0){
-		$query = " SELECT idCuadernoAntecedentes
-																		,idMedida
-												      ,cuadernoAntecedentes
-												      ,temporalidad
-												      ,fechaConclusion
-												 FROM medidas.cuadernoAntecedentes where idMedida = $idMedida ";
-	}else{
-		$query = " SELECT idCuadernoAntecedentes
-																		,idMedida
-												      ,cuadernoAntecedentes
-												      ,temporalidad
-												      ,fechaConclusion
-												 FROM medidas.cuadernoAntecedentes where idCuadernoAntecedentes = $idCuadernoAntecedentes ";
-	}
-	$indice = 0;
-	$stmt = sqlsrv_query($connMedidas, $query);
-	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
-	{
-		$arreglo[$indice][0]=$row['idCuadernoAntecedentes'];
-		$arreglo[$indice][1]=$row['cuadernoAntecedentes'];
-		$arreglo[$indice][2]=$row['temporalidad'];
-		$arreglo[$indice][3]=$row['fechaConclusion'];
-		$indice++;
-	}
-	if(isset($arreglo)){return $arreglo;}
-}
-
 function getDataUnidad($connMedidas, $idFiscaliaProc){
 	$query = " SELECT  idUnidad
 													      ,nombre
@@ -195,24 +166,21 @@ function getDataUnidad($connMedidas, $idFiscaliaProc){
 }
 
 function get_data_medida($connMedidas, $idMedida){
-	$query = " SELECT  [idMedida]
-													      ,[nuc]
-													      ,[idMP]
-													      ,[idUnidad]
-													      ,[idFiscalia]
-													      ,[idDelito]
-													      ,[fechaAcuerdo]
-													      ,[fechaRegistro]
-													      ,[diaSemana]
-													      ,[diaMes]
-													      ,[mes]
-													      ,[anio]
-													      ,[idEnlace]
-													      ,[idFiscaliaProcedencia]
-													      ,[estatus]
-														  ,[idCatCoorporacion]
-														  ,[nOficio]
-													  FROM [SIRE].[medidas].[medidasProteccion] WHERE idMedida = $idMedida ";
+	$query = " 
+	SELECT  
+		[idMedida]
+		,[nuc]
+		,[idMP]
+		,[idUnidad]
+		,[idFiscalia]
+		,[idDelito]
+		,[idEnlace]
+		,[idFiscaliaProcedencia]
+		,[estatus]
+		,[idCatCoorporacion]
+		,[cuadernoAntecedentes]
+	FROM [medidas].[medidasProteccion] WHERE idMedida = $idMedida ";
+
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
@@ -223,14 +191,11 @@ function get_data_medida($connMedidas, $idMedida){
 		$arreglo[$indice][3]=$row['idUnidad'];
 		$arreglo[$indice][4]=$row['idFiscalia'];
 		$arreglo[$indice][5]=$row['idDelito'];
-		$arreglo[$indice][6]=$row['fechaAcuerdo']->format('Y-m-d H:i');
-		$arreglo[$indice][7]=$row['fechaRegistro']->format('Y-m-d H:i');
-		$arreglo[$indice][8]=$row['idEnlace'];
-		$arreglo[$indice][9]=$row['idFiscaliaProcedencia'];
-		$arreglo[$indice][11]=$row['estatus'];
-		$arreglo[$indice][12]=$row['fechaAcuerdo']->format('Y-m-d');
-		$arreglo[$indice][13]=$row['idCatCoorporacion'];
-		$arreglo[$indice][14]=$row['nOficio'];
+		$arreglo[$indice][6]=$row['idEnlace'];
+		$arreglo[$indice][7]=$row['idFiscaliaProcedencia'];
+		$arreglo[$indice][8]=$row['estatus'];
+		$arreglo[$indice][9]=$row['idCatCoorporacion'];
+		$arreglo[$indice][10]=$row['cuadernoAntecedentes'];
 
 		$indice++;
 	}
@@ -238,24 +203,29 @@ function get_data_medida($connMedidas, $idMedida){
 }
 
 function getDataVictimas($connMedidas, $idMedida){
-	$query = " SELECT idVictima
-												      ,idMedida
-												      ,nombre
-												      ,paterno
-												      ,materno 
-																  ,CASE 
-																    WHEN genero = 1 THEN 'Masculino'
-																				WHEN genero = 2 THEN 'Femenino'
-																   ELSE 'Desconocido'
-																   END genero
-												      ,edad
-												      ,nombre+' '+paterno+' '+materno as nombreConcat
-												  FROM medidas.victimas WHERE idMedida = $idMedida ";
+	$query = " 
+		SELECT 
+			i.idInvolucrado,
+			i.idMedida,
+			i.nombre,
+			i.paterno,
+			i.materno,
+			CASE
+				WHEN genero = 1 THEN 'Masculino'
+				WHEN genero = 2 THEN 'Femenino'
+				ELSE 'Desconocido'
+			END genero,
+			i.edad
+			,i.nombre+' '+i.paterno+' '+i.materno as nombreConcat
+		FROM medidas.involucrado i
+		INNER JOIN medidas.medidasProteccion m  ON m.idMedida = i.idMedida
+		WHERE i.idMedida = $idMedida AND i.idTipoInvolucrado = 1";
+
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
 	{
-		$arreglo[$indice][0]=$row['idVictima'];
+		$arreglo[$indice][0]=$row['idInvolucrado'];
 		$arreglo[$indice][1]=$row['idMedida'];
 		$arreglo[$indice][2]=$row['nombre'];
 		$arreglo[$indice][3]=$row['paterno'];
@@ -269,29 +239,49 @@ function getDataVictimas($connMedidas, $idMedida){
 }
 
 function getDataTestigos($connMedidas, $idMedida){
-	$query = " SELECT [idTestigo]
-	,[idMedida]
-	,[NUC]
-	,[causa]
-	,[nombre]
-	,[paterno]
-	,[materno]
-	,case when estadoMedida = 1 THEN 'Vigente' WHEN estadoMedida = 2 THEN 'Concluido' ELSE 'Desconocido' END as estadoMedida
-	,[observaciones]
-FROM [SIRE].[medidas].[testigo] WHERE idMedida = $idMedida ";
+	$query = "
+	SELECT 
+		i.idInvolucrado,
+		i.idMedida,
+		m.nuc,
+		t.causa,
+		i.nombre,
+		i.paterno,
+		i.materno,
+		CASE
+			WHEN genero = 1 THEN 'Masculino'
+			WHEN genero = 2 THEN 'Femenino'
+			ELSE 'Desconocido'
+		END genero,
+		CASE
+			WHEN t.estado = 1 THEN 'Vigente'
+			WHEN t.estado = 2 THEN 'Concluido'
+			ELSE 'Desconocido'
+		END AS estadoMedida,
+		t.observaciones,
+		i.edad,
+		i.nombre+' '+i.paterno+' '+i.materno as nombreConcat
+	FROM medidas.medidasProteccion m
+	INNER JOIN medidas.involucrado i ON i.idMedida = m.idMedida
+	INNER JOIN medidas.testigo_Prueba t ON i.idInvolucrado = t.idInvolucrado
+	WHERE i.idMedida = $idMedida AND i.idTipoInvolucrado = 2
+	";
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
 	{
-		$arreglo[$indice][0]=$row['idTestigo'];
+		$arreglo[$indice][0]=$row['idInvolucrado'];
 		$arreglo[$indice][1]=$row['idMedida'];
-		$arreglo[$indice][2]=$row['NUC'];
+		$arreglo[$indice][2]=$row['nuc'];
 		$arreglo[$indice][3]=$row['causa'];
 		$arreglo[$indice][4]=$row['nombre'];
 		$arreglo[$indice][5]=$row['paterno'];
 		$arreglo[$indice][6]=$row['materno'];
 		$arreglo[$indice][7]=$row['estadoMedida'];
 		$arreglo[$indice][8]=$row['observaciones'];
+		$arreglo[$indice][9]=$row['edad'];
+		$arreglo[$indice][10]=$row['genero'];
+		$arreglo[$indice][11]=$row['nombreConcat'];
 		$indice++;
 	}
 	if(isset($arreglo)){return $arreglo;}
@@ -395,25 +385,25 @@ function getDataResolucion($connMedidas, $idResolucion){
        		COALESCE(r.revocada, 0) AS revocada, 
 			COALESCE(ra.ratificada, 0) AS ratificada, 
        		COALESCE(m.modificada, 0) AS modificada
-		FROM SIRE.medidas.resoluciones res
+		FROM medidas.resoluciones res
 		LEFT JOIN (
 			SELECT idResolucion, MAX(CASE WHEN ampliacion IS NOT NULL THEN ampliacion ELSE 0 END) as ampliacion
-			FROM SIRE.medidas.ampliada
+			FROM medidas.ampliada
 			GROUP BY idResolucion
 		) a ON a.idResolucion = res.idResolucion
 		LEFT JOIN (
 			SELECT idResolucion, MAX(CASE WHEN revocada IS NOT NULL THEN revocada ELSE 0 END) as revocada
-			FROM SIRE.medidas.revocada
+			FROM medidas.revocada
 			GROUP BY idResolucion
 		) r ON r.idResolucion = res.idResolucion
 		LEFT JOIN (
 			SELECT idResolucion, MAX(CASE WHEN modificada IS NOT NULL THEN modificada ELSE 0 END) as modificada
-			FROM SIRE.medidas.modificada
+			FROM medidas.modificada
 			GROUP BY idResolucion
 		) m ON m.idResolucion = res.idResolucion
 		LEFT JOIN (
 			SELECT idResolucion, MAX(CASE WHEN ratificada IS NOT NULL THEN ratificada ELSE 0 END) as ratificada
-			FROM SIRE.medidas.ratificada
+			FROM medidas.ratificada
 			GROUP BY idResolucion
 		) ra ON ra.idResolucion = res.idResolucion
 		WHERE res.idResolucion = ?; ";
@@ -598,39 +588,40 @@ function getDataMunicipios($conSic, $idEntidad){
 	if(isset($arreglo)){return $arreglo;}
 }
 
-function getDataVictimasEditar($connMedidas, $idVictima){
-	$query = " SELECT v.idVictima
-												      ,v.idMedida
-												      ,v.nombre
-												      ,v.paterno
-												      ,v.materno
-												      ,v.genero
-																  ,CASE 
-																    WHEN v.genero = 1 THEN 'Masculino'
-																				WHEN v.genero = 2 THEN 'Femenino'
-																   ELSE 'Desconocido'
-																   END AS generoN
-												      ,v.edad
-												      ,v.idEntidad
-																  ,e.Nombre as nombreEntidad
-															   ,v.idMunicipio
-																  ,m.Nombre AS nombreMunicipio
-															   ,v.colonia
-															   ,v.calle
-															   ,v.numero
-															   ,v.telefono1
-															   ,v.telefono2
-															   ,v.codigoPostal
-															   ,v.correo
-															  FROM SIRE.medidas.victimas v
-															  LEFT JOIN PRUEBA.dbo.CatEntidades e ON e.EntidadID = v.idEntidad
-															  LEFT JOIN PRUEBA.dbo.CatMunicipiosPais m ON m.MunicipioID = v.idMunicipio 
-															  WHERE idVictima = $idVictima ";
-	$indice = 0;
+// Esta función obtiene los datos de una víctima o testigo para editar
+function getDataInvolucrado ($connMedidas, $idInvolucrado) {
+	$query = " SELECT i.idInvolucrado
+		,i.idMedida
+		,i.nombre
+		,i.paterno
+		,i.materno
+		,i.genero
+		,CASE 
+		WHEN i.genero = 1 THEN 'Masculino'
+					WHEN i.genero = 2 THEN 'Femenino'
+		ELSE 'Desconocido'
+		END AS generoN
+		,i.edad
+		,i.idEntidad
+		,e.Nombre as nombreEntidad
+		,i.idMunicipio
+		,m.Nombre AS nombreMunicipio
+		,i.colonia
+		,i.calle
+		,i.numero
+		,i.telefono1
+		,i.telefono2
+		,i.codigoPostal
+		,i.correo 
+		FROM medidas.involucrado i
+		LEFT JOIN PRUEBA.dbo.CatEntidades e ON e.EntidadID = i.idEntidad
+		LEFT JOIN PRUEBA.dbo.CatMunicipiosPais m ON m.MunicipioID = i.idMunicipio 
+		WHERE idInvolucrado = $idInvolucrado ";
+	$indice = 0;	
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
 	{
-		$arreglo[$indice][0]=$row['idVictima'];
+		$arreglo[$indice][0]=$row['idInvolucrado'];
 		$arreglo[$indice][1]=$row['idMedida'];
 		$arreglo[$indice][2]=$row['nombre'];
 		$arreglo[$indice][3]=$row['paterno'];
@@ -654,8 +645,20 @@ function getDataVictimasEditar($connMedidas, $idVictima){
 	if(isset($arreglo)){return $arreglo;}
 }
 
-function checkDataContactoCompleted($connMedidas, $idVictima){
-	$query = " SELECT ISNULL(idEntidad,0) AS dataContacto FROM medidas.victimas WHERE idVictima = $idVictima ";
+// Función para verificar si los datos de contacto de un involucrado están completos y tengan asignadas medidas de protección
+function checkDataContactoCompleted($connMedidas, $idInvolucrado){
+	$query = "SELECT 
+		CASE 
+			WHEN i.idEntidad IS NULL THEN 0
+			WHEN EXISTS (
+			SELECT 1 
+			FROM medidas.involucrado_medidasAplicadas ma 
+			WHERE ma.idInvolucrado = i.idInvolucrado
+			) THEN i.idEntidad
+			ELSE 0
+		END AS dataContacto
+		FROM medidas.involucrado i
+		WHERE i.idInvolucrado = $idInvolucrado";
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
@@ -666,46 +669,61 @@ function checkDataContactoCompleted($connMedidas, $idVictima){
 	if(isset($arreglo)){return $arreglo;}
 }
 
+// Función para verificar si los datos de contacto de un involucrado están completos
+function checkDataInvolucradoCompleted ($connMedidas, $idInvolucrado){
+	$query = "SELECT ISNULL(idEntidad,0) AS dataContacto 
+		FROM medidas.involucrado   
+		WHERE idInvolucrado = $idInvolucrado";
+	$indice = 0;
+	$stmt = sqlsrv_query($connMedidas, $query);
+	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
+	{
+		$arreglo[$indice][0]=$row['dataContacto'];
+		$indice++;
+	}
+	if(isset($arreglo)){return $arreglo;}	
+}
+
 function getDataImputados($connMedidas, $idMedida, $tipoConsulta, $idImputado){
 	if($tipoConsulta == 0){
-		$query = " SELECT imputadoID
-												      ,idMedida
-												      ,nombre
-												      ,paterno
-												      ,materno
-												      ,genero
-												      ,CASE 
-												           WHEN genero = 1 THEN 'Masculino'
-												           WHEN genero = 2 THEN 'Femenino'
-												           WHEN genero = 3 THEN 'Desconocido'
-												       ELSE 'Desconocido'
-												       END AS generoN
-												      ,edad
-												      ,nombre+' '+paterno+' '+materno as nombreConcat
-												  FROM medidas.imputados where idMedida = $idMedida ";
+		$query = " SELECT idInvolucrado
+				,idMedida
+				,nombre
+				,paterno
+				,materno
+				,genero
+				,CASE 
+					WHEN genero = 1 THEN 'Masculino'
+					WHEN genero = 2 THEN 'Femenino'
+					WHEN genero = 3 THEN 'Desconocido'
+				ELSE 'Desconocido'
+				END AS generoN
+				,edad
+				,nombre+' '+paterno+' '+materno as nombreConcat
+			FROM medidas.involucrado where idMedida = $idMedida and idTipoInvolucrado = 3";
 	}else{
-		$query = " SELECT imputadoID
-												      ,idMedida
-												      ,nombre
-												      ,paterno
-												      ,materno
-												      ,genero
-												      ,CASE 
-												           WHEN genero = 1 THEN 'Masculino'
-												           WHEN genero = 2 THEN 'Femenino'
-												           WHEN genero = 3 THEN 'Desconocido'
-												       ELSE 'Desconocido'
-												       END AS generoN
-												      ,edad
-												      ,nombre+' '+paterno+' '+materno as nombreConcat
-												  FROM medidas.imputados where imputadoID = $idImputado ";
+		$query = " SELECT idInvolucrado
+				,idMedida
+				,nombre
+				,paterno
+				,materno
+				,genero
+				,CASE 
+					WHEN genero = 1 THEN 'Masculino'
+					WHEN genero = 2 THEN 'Femenino'
+					WHEN genero = 3 THEN 'Desconocido'
+				ELSE 'Desconocido'
+				END AS generoN
+				,edad
+				,nombre+' '+paterno+' '+materno as nombreConcat
+			FROM medidas.involucrado where idInvolucrado = $idImputado ";
 	}
 	
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
 	{
-		$arreglo[$indice][0]=$row['imputadoID'];
+		$arreglo[$indice][0]=$row['idInvolucrado'];
 		$arreglo[$indice][1]=$row['idMedida'];
 		$arreglo[$indice][2]=$row['nombre'];
 		$arreglo[$indice][3]=$row['paterno'];
@@ -751,7 +769,7 @@ function getMedidasAplicadasTest($connMedidas, $idMedida){
 	,[nuc]
 	,[idMedida]
 	,[idCatFraccion]
-FROM [SIRE].[medidas].[medidasAplicadasTestigo] WHERE idMedida = $idMedida ";
+FROM [medidas].[medidasAplicadasTestigo] WHERE idMedida = $idMedida ";
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
@@ -763,12 +781,13 @@ FROM [SIRE].[medidas].[medidasAplicadasTestigo] WHERE idMedida = $idMedida ";
 }
 
 
-function getMedidasAplicadas($connMedidas, $idMedida){
-	$query = " SELECT idMedidaAplicada
-												      ,idMedida
-												      ,nuc
-												      ,idCatFraccion
-												  FROM medidas.medidasAplicadas WHERE idMedida = $idMedida ";
+function getMedidasAplicadas($connMedidas, $idInvolucrado){
+	$query = "
+	SELECT 
+		idCatFraccion
+	FROM medidas.involucrado_medidasAplicadas
+	WHERE idInvolucrado = $idInvolucrado
+	";
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
@@ -818,7 +837,7 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 															      ,m.estatus
 															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
 															      ,m.fechaConclusion
-															  FROM SIRE.medidas.medidasProteccion m
+															  FROM medidas.medidasProteccion m
 															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
 															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
 															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
@@ -846,7 +865,7 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 															      ,m.estatus
 															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
 															      ,m.fechaConclusion
-															  FROM SIRE.medidas.medidasProteccion m
+															  FROM medidas.medidasProteccion m
 															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
 															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
 															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
@@ -876,7 +895,7 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 															      ,m.estatus
 															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
 															      ,m.fechaConclusion
-															  FROM SIRE.medidas.medidasProteccion m
+															  FROM medidas.medidasProteccion m
 															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
 															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
 															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
@@ -904,7 +923,7 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 															      ,m.estatus
 															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
 															      ,m.fechaConclusion
-															  FROM SIRE.medidas.medidasProteccion m
+															  FROM medidas.medidasProteccion m
 															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
 															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
 															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
@@ -933,7 +952,7 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 															      ,m.estatus
 															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
 															      ,m.fechaConclusion
-															  FROM SIRE.medidas.medidasProteccion m
+															  FROM medidas.medidasProteccion m
 															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
 															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
 															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
@@ -960,7 +979,7 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 															      ,m.estatus
 															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
 															      ,m.fechaConclusion
-															  FROM SIRE.medidas.medidasProteccion m
+															  FROM medidas.medidasProteccion m
 															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
 															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
 															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
@@ -968,60 +987,37 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 															  WHERE m.anio = $anio  AND m.mes = $mes AND mp.idEnlace = $idenlace order by m.idMedida desc ";
 		}
 	}elseif($rolUser == 4){
-		if($diames != 0){
-				$query = " SELECT m.idMedida
-															      ,m.nuc
-															      ,m.idMP
-																  			,mp.nombre+' '+mp.paterno+' '+mp.materno AS nombreMP
-															      ,m.idUnidad
-															      ,m.idFiscalia
-															      ,m.idDelito
-																 			 ,d.Nombre AS nombreDelito
-															      ,m.fechaAcuerdo
-															      ,m.fechaRegistro
-															      ,m.diaSemana
-															      ,m.diaMes
-															      ,m.mes
-															      ,m.anio
-															      ,m.idEnlace
-															      ,m.idFiscaliaProcedencia
-																 				,f.nombre as nombreFiscProc
-															      ,m.estatus
-															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
-															      ,m.fechaConclusion
-															  FROM SIRE.medidas.medidasProteccion m
-															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
-															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
-															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
-															  INNER JOIN ESTADISTICAV2.dbo.enlace e ON e.idEnlace = m.idEnlace
-															  WHERE m.diaSemana = $numeroDia AND m.anio = $anio AND m.diaMes = $diames AND m.mes = $mes AND mp.idEnlace = $idenlace order by m.idMedida desc ";
-		}else{
-			       $query = " SELECT m.idMedida
-															      ,m.nuc
-															      ,m.idMP
-																  			,mp.nombre+' '+mp.paterno+' '+mp.materno AS nombreMP
-															      ,m.idUnidad
-															      ,m.idFiscalia
-															      ,m.idDelito
-																 			 ,d.Nombre AS nombreDelito
-															      ,m.fechaAcuerdo
-															      ,m.fechaRegistro
-															      ,m.diaSemana
-															      ,m.diaMes
-															      ,m.mes
-															      ,m.anio
-															      ,m.idEnlace
-															      ,m.idFiscaliaProcedencia
-																 				,f.nombre as nombreFiscProc
-															      ,m.estatus
-															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
-															      ,m.fechaConclusion
-															  FROM SIRE.medidas.medidasProteccion m
-															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
-															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
-															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
-															  INNER JOIN ESTADISTICAV2.dbo.enlace e ON e.idEnlace = m.idEnlace
-															  WHERE m.anio = $anio  AND m.mes = $mes AND mp.idEnlace = $idenlace order by m.idMedida desc ";
+		$query = "
+		SELECT DISTINCT 
+			m.idMedida
+			,m.nuc
+			,m.idMP
+			,mp.nombre+' '+mp.paterno+' '+mp.materno AS nombreMP
+			,m.idUnidad
+			,m.idFiscalia
+			,m.idDelito
+			,d.Nombre AS nombreDelito
+			,r.fechaAcuerdo
+			,r.fechaRegistro
+			,m.idEnlace
+			,m.idFiscaliaProcedencia
+			,f.nombre as nombreFiscProc
+			,m.estatus
+			,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
+			,r.fechaConclusion
+		FROM medidas.medidasProteccion m
+		LEFT JOIN medidas.mp ON mp.idMp = m.idMP
+		INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
+		INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
+		INNER JOIN ESTADISTICAV2.dbo.enlace e ON e.idEnlace = m.idEnlace
+		INNER JOIN medidas.involucrado i ON i.idMedida = m.idMedida
+		INNER JOIN medidas.registro r ON r.idInvolucrado = i.idInvolucrado
+		";
+		if($diames != 0) {
+			$query .= "WHERE YEAR(r.fechaAcuerdo) = $anio AND MONTH(r.fechaAcuerdo) = $mes AND DAY(r.fechaAcuerdo) = $diames AND mp.idEnlace = $idenlace order by m.idMedida desc";
+		}
+		else {						
+			$query .= "WHERE YEAR(r.fechaAcuerdo) = $anio AND MONTH(r.fechaAcuerdo) = $mes AND mp.idEnlace = $idenlace order by m.idMedida desc";
 		}
 	}
 	$indice = 0;
@@ -1038,10 +1034,10 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 		$arreglo[$indice][7]=$row['nombreDelito'];
 		$arreglo[$indice][8]=$row['fechaAcuerdo']->format('Y-m-d H:i');
 		$arreglo[$indice][9]=$row['fechaRegistro']->format('Y-m-d H:i');
-		$arreglo[$indice][10]=$row['diaSemana'];
-		$arreglo[$indice][11]=$row['diaMes'];
-		$arreglo[$indice][12]=$row['mes'];
-		$arreglo[$indice][13]=$row['anio'];
+		// $arreglo[$indice][10]=$row['diaSemana'];
+		// $arreglo[$indice][11]=$row['diaMes'];
+		// $arreglo[$indice][12]=$row['mes'];
+		// $arreglo[$indice][13]=$row['anio'];
 		$arreglo[$indice][14]=$row['idEnlace'];
 		$arreglo[$indice][15]=$row['idFiscaliaProcedencia'];
 		$arreglo[$indice][16]=$row['nombreFiscProc'];
@@ -1099,7 +1095,7 @@ function getDataDelitoMedida($connMedidas, $idMedida){
 															      ,m.nuc
 															      ,m.idDelito
 																 			 ,d.Nombre AS nombreDelito
-															  FROM SIRE.medidas.medidasProteccion m
+															  FROM medidas.medidasProteccion m
 															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
 															  WHERE m.idMedida =  $idMedida ";
 
@@ -1260,7 +1256,7 @@ function getRolUser($connMedidas , $idEnlace){
 //Funcion para checar el total de carpetas faltantes de asignar a Ministerio Publico
 function getCarpetasFaltante($connMedidas){
 	$query = " SELECT count(idMP) AS totalPendientes
-            FROM SIRE.medidas.medidasProteccion WHERE idUnidad = 0 AND idFiscalia = 0 AND idMP = 0 ";
+            FROM medidas.medidasProteccion WHERE idUnidad = 0 AND idFiscalia = 0 AND idMP = 0 ";
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
@@ -1292,7 +1288,7 @@ function get_data_medidas_pendientes($connMedidas){
 																 				,f.nombre as nombreFiscProc
 															      ,m.estatus
 															      ,e.nombre+' '+e.apellidoPaterno+' '+e.apellidoMarterno AS nombreEnlace
-															  FROM SIRE.medidas.medidasProteccion m
+															  FROM medidas.medidasProteccion m
 															  LEFT JOIN medidas.mp ON mp.idMp = m.idMP
 															  INNER JOIN PRUEBA.dbo.CatModalidadesEstadisticas d ON d.CatModalidadesEstadisticasID = m.idDelito
 															  INNER JOIN medidas.catFiscalias f ON f.catFiscaliasID = m.idFiscaliaProcedencia 
@@ -1392,6 +1388,111 @@ function modificarMedidasAplicadas($connMedidas, $idMedida){
 		$indice++;
 	}
 	if(isset($arreglo)){return $arreglo;}
+}
+
+function modificarMedidasAplicadasTestigo($connMedidas, $idMedida){
+	$query = " SELECT ma.idMedidasAplicadasTestigo
+				,ma.idMedida
+				,ma.nuc
+				,ma.idCatFraccion
+				,CASE 
+						WHEN ma.idCatFraccion = 1 THEN 'I'
+							WHEN ma.idCatFraccion = 2 THEN 'II'
+							WHEN ma.idCatFraccion = 3 THEN 'III'
+							WHEN ma.idCatFraccion = 4 THEN 'IV'
+							WHEN ma.idCatFraccion = 5 THEN 'V'
+							WHEN ma.idCatFraccion = 6 THEN 'VI'
+							WHEN ma.idCatFraccion = 7 THEN 'VII'
+							WHEN ma.idCatFraccion = 8 THEN 'VIII'
+							WHEN ma.idCatFraccion = 9 THEN 'XI'
+							WHEN ma.idCatFraccion = 10 THEN 'X'
+						ELSE 'Sin asignar medida'
+						END as fraccionAsignada
+				,cf.nombre
+				FROM medidas.medidasAplicadasTestigo ma
+				INNER JOIN medidas.catFracciones cf ON cf.idCatFraccion = ma.idCatFraccion
+				WHERE idMedida = $idMedida ";
+	$indice = 0;
+	$stmt = sqlsrv_query($connMedidas, $query);
+	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
+	{
+		$arreglo[$indice][0]=$row['idMedidasAplicadasTestigo'];
+		$arreglo[$indice][1]=$row['idMedida'];
+		$arreglo[$indice][2]=$row['nuc'];
+		$arreglo[$indice][3]=$row['idCatFraccion'];
+		$arreglo[$indice][4]=$row['nombre'];
+		$arreglo[$indice][5]=$row['fraccionAsignada'];
+		$indice++;
+	}
+	if(isset($arreglo)){return $arreglo;}
+}
+
+function modificarMedidasAplicadasInvolucrado ($connMedidas, $idInvolucrado) {
+	$query = "SELECT
+		ma.idMedidaAplicada
+		,CASE 
+			WHEN ma.idCatFraccion = 1 THEN 'I'
+				WHEN ma.idCatFraccion = 2 THEN 'II'
+				WHEN ma.idCatFraccion = 3 THEN 'III'
+				WHEN ma.idCatFraccion = 4 THEN 'IV'
+				WHEN ma.idCatFraccion = 5 THEN 'V'
+				WHEN ma.idCatFraccion = 6 THEN 'VI'
+				WHEN ma.idCatFraccion = 7 THEN 'VII'
+				WHEN ma.idCatFraccion = 8 THEN 'VIII'
+				WHEN ma.idCatFraccion = 9 THEN 'XI'
+				WHEN ma.idCatFraccion = 10 THEN 'X'
+			ELSE 'Sin asignar medida'
+			END as fraccionAsignada
+		,cf.nombre
+	FROM medidas.involucrado_medidasAplicadas ma
+	INNER JOIN medidas.catFracciones cf ON cf.idCatFraccion = ma.idCatFraccion
+	WHERE idInvolucrado = $idInvolucrado";
+	$indice = 0;
+	$stmt = sqlsrv_query($connMedidas, $query);
+	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
+	{
+		$arreglo[$indice][0]=$row['idMedidaAplicada'];
+		$arreglo[$indice][1]=$row['nombre'];
+		$arreglo[$indice][2]=$row['fraccionAsignada'];
+		$indice++;
+	}
+	if(isset($arreglo)){return $arreglo;}
+}
+
+function getRegistro ($connMedidas, $idInvolucrado) {
+	$query = "
+	SELECT	
+		r.nOficio,
+		r.fechaAcuerdo,
+		r.fechaConclusion,
+		r.fechaRegistro,
+		i.nombre,
+		i.paterno,
+		i.materno,
+		i.genero,
+		i.edad
+	FROM medidas.involucrado i
+	INNER JOIN medidas.registro r ON r.idInvolucrado = i.idInvolucrado
+	WHERE i.idInvolucrado = ?
+	";
+
+	$params = array(&$idInvolucrado);
+
+	$stmt = sqlsrv_prepare($connMedidas, $query, $params);
+
+	if ($stmt) {
+		$result = sqlsrv_execute($stmt);
+		if ($result) {
+			$array = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+			return $array;
+		} else {
+			$errors = sqlsrv_errors();
+			return $errors;
+		}
+	} else {
+		$errors = sqlsrv_errors();
+		return $errors;
+	}	
 }
 
 function checkEdad($edad){

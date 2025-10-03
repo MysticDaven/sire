@@ -27,6 +27,9 @@ if (isset($_POST["typeCheck"])) {
 	$typeCheck = $_POST["typeCheck"];
 }
 
+$idVictima = isset($_POST['idVictima']) ? $_POST['idVictima'] : null;
+$idTestigo = isset($_POST['idTestigo']) ? $_POST['idTestigo'] : null;
+
 $getRolUser = getRolUser($connMedidas, $idEnlace);
 $rolUser = $getRolUser[0][0];
 
@@ -57,30 +60,54 @@ if (isset($_POST["idMedida"])) {
 		$get_idFiscalia  = $medidaData[0][4];
 		$get_idDelito = $medidaData[0][5];
 		$get_fechaAcuerdo = $medidaData[0][6];
-		$get_fechaRegistro = $medidaData[0][7];
-		$get_idEnlace = $medidaData[0][8];
-		$get_idFiscaliaProcedencia = $medidaData[0][9];
-		$get_estatus = $medidaData[0][11];
-		$get_idCoorporacion = $medidaData[0][13];
-		$get_nOficio = $medidaData[0][14];
+		$get_idFiscaliaProcedencia = $medidaData[0][7];
+		$get_estatus = $medidaData[0][8];
+		$get_idCoorporacion = $medidaData[0][9];
 		$a = 1;
-
-		///// MEDIDAS APLICADAS PARA EL RESTIGO /////
-		$getMedidasAplicadasTest = getMedidasAplicadasTest($connMedidas, $idMedida);
-		$aplicadasTest = array();
-		for ($e = 0; $e < sizeof($getMedidasAplicadasTest); $e++) {
-			$aplicadasTest[$e] = $getMedidasAplicadasTest[$e][0];
-		}
 		
-		$getMedidasAplicadas = getMedidasAplicadas($connMedidas, $idMedida);
-		$aplicadas = array();
+		$getDataVictimas = getDataVictimas($connMedidas, $idMedida);
+		$getDataTestigos = getDataTestigos($connMedidas, $idMedida);
 
-		for ($h = 0; $h < sizeof($getMedidasAplicadas); $h++) {
-			$aplicadas[$h] = $getMedidasAplicadas[$h][0];
+
+		if ($idVictima == 'undefined') {
+			$idVictima = $getDataVictimas[0][0];
 		}
 
+		if ($idTestigo == 'undefined') {
+			$idTestigo = $getDataTestigos[0][0];
+		}
+
+		if ($idVictima != null) {
+			$getRegistroVictima = getRegistro($connMedidas, $idVictima);		
+			// $fechaAcuerdo = $getRegistroVictima['fechaAcuerdo']->format('Y-m-d\TH:i');
+			$getMedidasAplicadas = getMedidasAplicadas($connMedidas, $idVictima);
+			$aplicadas = array();
+
+			for ($h = 0; $h < sizeof($getMedidasAplicadas); $h++) {
+				$aplicadas[$h] = $getMedidasAplicadas[$h][0];
+			}
+			$noVictima = sizeof($getDataVictimas);
+		}
+		else {
+			$noVictima = 0;
+		}
+
+		if ($idTestigo != null) {
+			$getRegistroTestigo = getRegistro($connMedidas, $idTestigo);
+			$getMedidasAplicadasTest = getMedidasAplicadas($connMedidas, $idTestigo);
+			$aplicadasTest = array();
+			for ($e = 0; $e < sizeof($getMedidasAplicadasTest); $e++) {
+				$aplicadasTest[$e] = $getMedidasAplicadasTest[$e][0];
+			}
+			$noTestigo = sizeof($getDataTestigos);
+		}
+		else {
+			$noTestigo = 0;
+		}
 	} else {
 		$a = 0;
+		$noVictima = 0;
+		$noTestigo = 0;
 		$idMedida = 0;
 		$causaP = "";
 		$bandCausa = 0;
@@ -103,7 +130,7 @@ if (isset($_POST["idMedida"])) {
 			  if($rolUser != 4){ ?>
 				<input type="hidden" name="nuc" id="nuc" value="<? echo	$get_nuc; ?>"> <? } ?>
 				<div class="row">
-					<div class="col-xs-12 col-sm-12  col-md-3">
+					<div class="col-xs-12 col-md-3">
 						<label for="heard">Agente del Ministerio Público: <span class="aste">(*)</span></label><br>
 						<div id="agentesMP_id_div">
 							<select class="dataAutocomplet form-control browser-default custom-select" onchange="refreshDataAgente()" id="agentesMP_id" locked="locked" name="agentesMP_id" type="text" <? if ($rolUser == 3) { ?> disabled <? } ?>>
@@ -127,7 +154,7 @@ if (isset($_POST["idMedida"])) {
 								<?$data = getDataAdscripcion($connMedidas, $get_idMP);
 								 	$idUnidad = $data[0][0];	$nombreUnidad = $data[0][1]; ?>
 									<option class="fontBold" value="<? echo $idUnidad; ?>" > <? echo $nombreUnidad; ?> </option>
-								</select>
+							</select>
 						</div>
 						<? } else { ?>
 						<div class="col-xs-12 col-sm-12  col-md-2">
@@ -149,7 +176,7 @@ if (isset($_POST["idMedida"])) {
 								<option value="<? if ($a == 1) { ?> 1 <? } ?>"><? if ($a == 1) { ?> Agente <? } ?></option>
 							</select>
 						</div>
-						<div class="col-xs-10 col-sm-10  col-md-3">
+						<div class="col-xs-12 col-sm-12  col-md-3">
 							<label for="idCoorporacion">Coorporación Policial que dará protección: </label>
 							<select class="form-control" id="idCoorporacion" >
 								<option value=null>Seleccione la coorporación</option>
@@ -179,26 +206,6 @@ if (isset($_POST["idMedida"])) {
 					<input class="form-control" value="<? if ($a == 1) {echo $get_nuc;} ?>" onchange="validateMedidaOK(this.id)" id="nuc" type="text" <? if ($rolUser == 1 || $rolUser == 3) { ?> disabled <? } ?>>
 				</div>
 				<div class="col-xs-12 col-sm-12  col-md-4">
-					<label for="nOficio">Número de oficio: <span class="aste">(*)</span></label>
-					<input class="form-control" id="nOficio" type="text" onchange="validateNOF(this.id)" value="<?php if ($a == 1) echo $get_nOficio; ?>">
-				</div>
-				<div class="col-xs-12 col-sm-12  col-md-4">
-					<label for="idDelito">Delito: <span class="aste">(*)</span></label>
-					<div id="idDelito_div">
-						<select class="dataAutocomplet form-control browser-default custom-select" id="idDelito" onchange="validateMedidaOK('idDelito_div')" <? if ($rolUser == 1 || $rolUser == 3) { ?> disabled <? } ?>>
-							<option value="">Seleccione</option>
-							<? $delitos = dataDelitosSicap($conSic);
-							for ($h = 0; $h < sizeof($delitos); $h++) {
-								$idDelito = $delitos[$h][0];
-								$delito = $delitos[$h][1]; ?>
-								<option class="fontBold" value="<? echo $idDelito; ?>" <? if ($a == 1 && $idDelito == $get_idDelito) { ?> selected <? } ?>><? echo $delito; ?></option>
-							<? } ?>
-						</select>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-xs-12 col-sm-12  col-md-4">
 					<label for="idFiscaliaProc">Fiscalía ó Unidad de procedencia :</label>
 					<div id="idFiscaliaProc_div">
 						<select class="dataAutocomplet form-control browser-default custom-select" id="idFiscaliaProc" onchange="validateMedidaOK('idFiscaliaProc_div')" <? if ($rolUser == 1 || $rolUser == 3) { ?> disabled <? } ?>>
@@ -212,14 +219,50 @@ if (isset($_POST["idMedida"])) {
 							<? } ?>
 						</select>
 					</div>
-				</div>
+				</div>				
 				<div class="col-xs-12 col-sm-12  col-md-4">
+					<label for="idDelito">Delito: <span class="aste">(*)</span></label>
+					<div id="idDelito_div">
+						<select 
+							class="dataAutocomplet form-control browser-default custom-select" 
+							id="idDelito" 
+							onchange="validateMedidaVictima('idDelito_div')" 
+							<? if ($rolUser == 1 || $rolUser == 3) { ?> disabled <? } ?>>
+							<option value="">Seleccione</option>
+								<? $delitos = dataDelitosSicap($conSic);
+								for ($h = 0; $h < sizeof($delitos); $h++) {
+									$idDelito = $delitos[$h][0];
+									$delito = $delitos[$h][1]; ?>
+									<option class="fontBold" value="<? echo $idDelito; ?>" <? if ($a == 1 && $idDelito == $get_idDelito) { ?> selected <? } ?>><? echo $delito; ?>
+							</option>
+								<? } ?>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--DATOS GENERALES-->
+	<!--DATOS DE LA VICTIMA-->
+	<div class="panel panel-default fd1" id="datosVictima">
+		<div class="panel-body">
+			<h5 class="text-on-pannel"><strong>Datos de la víctima</strong></h5>
+			<div class="row">
+				<div class="col-xs-12 col-sm-12  col-md-3">
+					<label for="nOficio">Número de oficio: <span class="aste">(*)</span></label>
+					<input class="form-control" id="nOficio" type="text" onchange="" 
+						value="<? if ($noVictima > 0) {
+							echo $getRegistroVictima['nOficio'];
+						} ?>"
+					>
+				</div>			
+				<div class="col-xs-12 col-sm-12  col-md-3">
 					<label for="fechaAcuerdo">Fecha del acuerdo: <span class="aste">(*)</span></label>
 					<input 
 						id="fechaAcuerdo" 
 						type="datetime-local" 
-						value="<? if ($a == 1) {
-							echo $fechaev = str_ireplace(' ', 'T', $get_fechaAcuerdo);
+						value="<? if ($noVictima > 0) {
+							echo $getRegistroVictima['fechaAcuerdo']->format('Y-m-d\TH:i');
 						} ?>" 
 						onchange="
 							validateMedidaOK(this.id), 
@@ -230,28 +273,37 @@ if (isset($_POST["idMedida"])) {
 						max="<? echo $hoy; ?>T23:59:59" 
 						<? if ($rolUser == 1 || $rolUser == 3) { ?> disabled <? } ?> />
 				</div>
-				<div class="col-xs-12 col-sm-12  col-md-4">
+				<?if($rolUser == 4){ ?>
+				<div class="col-xs-12 col-sm-12  col-md-3">
+					<label for="fechaConclusion">Fecha de conclusión: <span class="aste">(*)</span></label>
+					<input 
+						id="fechaConclu" 
+						type="datetime-local" 
+						value="<? if ($noVictima > 0) {
+								echo $getRegistroVictima['fechaConclusion']->format('Y-m-d\TH:i');
+							} ?>"
+						name="fechaConclu" 
+						onchange="
+							validateMedidaOK(this.id)
+							validarFechaConclusion(this.id)" 
+						onclick="createOptionsDate('fechaAcuerdo', 'fechaConclu')"
+						class="fechas form-control gehit" />
+				</div>
+				<? } ?>					
+				<div class="col-xs-12 col-sm-12  col-md-3">
 					<label for="fechaRegistro">Fecha de registro:</label>
 					<input 
-						class="form-control"
+						class="form-control"						
 						id="fechaRegistro" 
-						value="<? if ($a == 1) {
-								echo $get_fechaRegistro;
-							} else {
+						value="<? if ($noVictima > 0) {
+							echo $getRegistroVictima['fechaRegistro']->format('Y-m-d\TH:i');
+							}
+							else {
 								echo $fecha;
 							} ?>" 
-						type="text" 
+						type="datetime-local" 
 						readonly><br>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!--DATOS GENERALES-->
-	<!--DATOS DE LA VICTIMA-->
-	<div class="panel panel-default fd1">
-		<div class="panel-body">
-			<h5 class="text-on-pannel"><strong>Datos de la víctima</strong></h5>
-			<div class="row">
+				</div>							
 				<div class="col-xs-12 col-sm-12  col-md-3">
 					<label for="nombreVicti">Nombre: <span class="aste">(*)</span></label>
 					<input class="form-control" value="" onchange="validateMedidaOK(this.id)" id="nombreVicti" type="text">
@@ -280,17 +332,17 @@ if (isset($_POST["idMedida"])) {
 						<?php
 						$valor = -1;
 						for ($i = 1; $i < 12; $i++) {	?>
-							<option class="fontBold" value="<? echo $valor ?>"><? echo $i; ?> Meses</option>
+							<option class="fontBold" value="<?= $valor ?>"><? echo $i; ?> Meses</option>
 						<? $valor--;
 						}
 						for ($i = 1; $i <= 100; $i++) {	?>
-							<option class="fontBold" value="<? echo $i; ?> "><? echo $i; ?> Años</option>
+							<option class="fontBold" value="<?= $i ?>"><? echo $i; ?> Años</option>
 						<? } ?>
 					</select>
-				</div>
+				</div>			
 			</div><br>
-			<? $getDataVictimas = getDataVictimas($connMedidas, $idMedida);
-			if (sizeof($getDataVictimas) > 0) {
+			<? 
+			if ($a == 1 && sizeof($getDataVictimas) > 0) {
 				if ($rolUser != 1) { ?>
 					<div class="row">
 						<div class="col-xs-12 col-sm-12  col-md-3">
@@ -318,7 +370,7 @@ if (isset($_POST["idMedida"])) {
 							<tbody id="contentTableDataVictimas">
 								<? for ($h = 0; $h < sizeof($getDataVictimas); $h++) {
 									$totalV = sizeof($getDataVictimas);
-									$dataCompleted = checkDataContactoCompleted($connMedidas, $getDataVictimas[$h][0]);
+									$dataCompleted = checkDataContactoCompleted($connMedidas, $getDataVictimas[$h][0], 1);
 									$checkEdad = checkEdad($getDataVictimas[$h][6]); ?>
 									<tr>
 										<td><? echo $h + 1 ?></td>
@@ -335,7 +387,7 @@ if (isset($_POST["idMedida"])) {
 												<center>Incompleto</center>
 											</td><? } ?>
 										<td>
-											<center><span onclick="modalDatosMedidaCapturista(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 0, <? echo $idMedida; ?>, 'victima')" title="Editar" style="cursor: pointer; color: orange; font-size: 18px;" class="glyphicon glyphicon-edit"></span></center>
+											<center><span onclick="modalDatosMedidaCapturistaInvolucrado(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 0, <? echo $idMedida; ?>, 'victima', <?= $rolUser ?>, '<?= $get_idDelito ?>', <?= $getDataVictimas[$h][0] ?>)" title="Editar" style="cursor: pointer; color: orange; font-size: 18px;" class="glyphicon glyphicon-edit"></span></center>
 										</td>
 										<td>
 											<center><span onclick="deleteItemV(3, <? echo $getDataVictimas[$h][0] ?>, <?php echo $idEnlace; ?>,<? echo $idMedida ?>, <? echo $totalV ?>)" title="Eliminar" style="cursor: pointer; color: red; font-size: 18px;" class="glyphicon glyphicon-trash"></span> </center>
@@ -351,130 +403,94 @@ if (isset($_POST["idMedida"])) {
 	</div>
 	<!--DATOS DE LA VICTIMA-->
 	<? if ($rolUser == 3 || $rolUser == 1 || $rolUser == 4) { ?>
-		<div id="medidas_seleccionadas"></div>
-		<div class="panel panel-default fd1">
+		<div id="medidas_seleccionadas">
+			<?php
+			if ($noVictima > 0 && sizeof($getMedidasAplicadas) > 0) {
+				for ($i = 1; $i <= 10; $i++) {
+					if(in_array($i, $aplicadas)){ ?>
+						<input type="hidden" id="medidaSeleccionada' + <?= $i; ?>'" class="inputMedidaHidden" name="medidaSeleccionada'+ <?= $i; ?> +'" value="<?= $i; ?>"> <?php
+					}
+				}
+			}				
+			?>
+		</div>
+		<div class="panel panel-default fd1" id="medidasProteccionVictima">			
 			<div class="panel-body">
 				<h5 class="text-on-pannel"><strong>Medidas de protección VICTIMA</strong></h5>
-				<div class="row">
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img 
-							<? if ($a == 1 && in_array(1, $aplicadas)) { 
-								?> 
-									src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 01 Fondo.png" 
-								<? 
-								} 
-								else { 
-								?> 
-									src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 01 Gris.png" 
-									onmouseover="hoverIMG(this, 'uno');" 
-									onmouseout="unhoverIMG(this, 'uno')" 
-									<? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { 
-										?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 1, <? echo $get_nuc; ?>)" <? 
-									} else {
-											if ($rolUser != 1 && $rolUser != 4) { 
-												?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 1, <? echo $idMedida; ?>)" <? }
-											elseif($rolUser == 4) { 
-												?> onclick="agregarMedida(this, 1 , 'uno')" <? 
+				<div class="col-md-12">
+					<?php
+					if ($a == 1 && sizeof($getDataVictimas) > 0 ) { ?>
+						<div class="col-sm-12 col-md-4">
+							<label for="idVictima">Víctima(s)</label>
+							<select class="form-control" id="idVictima"
+								onchange="reloadModalMDP(<?= $tipoModal ?>, <?= $idEnlace ?>, <?= $idMedida ?>, <?= $typeArch ?>, <?= $typeCheck ?>, this.value, <?= $idTestigo ?> )">
+								<?php
+								foreach ($getDataVictimas as $victima) { ?>
+									<option 
+										value="<?= $victima[0] ?>"
+										<?php
+										if ($victima[0] == $idVictima) { 
+											echo 'selected';
+										} ?>									
+										> <?= $victima[7] ?> 
+									</option>
+								<? } ?>
+							</select>
+						</div>
+					<? }?>
+				</div>				
+				<div id="panelMedidasProteccion">
+					<?php 
+					$numeros = ['uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'];
+					for ($i = 1; $i <= 10 ; $i++) :
+						if ($i % 2 != 0) { ?>
+						<div class="row"> <?php } ?>
+							<div class="col-xs-12 col-sm-6 col-md-6">
+								<img
+									src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas <?= str_pad($i, 2, '0', STR_PAD_LEFT) ?> <?= ($a == 1 && in_array($i, $aplicadas)) ? 'Fondo' : 'Gris' ?>.png"
+									onmouseover="hoverIMG(this, '<?= $numeros[$i - 1] ?>')"
+									onmouseout="										
+										if(!consultarInputHidden().includes('<?= $i ?>')){
+											unhoverIMG(this, '<?= $numeros[$i - 1] ?>');
+										}
+									"
+									<?php
+									if ($a == 1 && sizeof($getDataVictimas) > 0 && $rolUser != 1) { ?>
+										onclick="
+											total = consultarInputHidden().length;
+											if (consultarInputHidden().includes('<?= $i ?>')) {
+												aplicarMedida(<?= $idVictima ?>, <?= $idEnlace ?>, <?= $idMedida ?>, <?= $i ?>, <?= $get_nuc ?>, 'delete', total, 1)
+											} else {
+												aplicarMedida(<?= $idVictima ?>, <?= $idEnlace ?>, <?= $idMedida ?>, <?= $i ?>, <?= $get_nuc ?>, 'add', total, 1)
 											}
+										" <?										
 									}
-								} ?> class="cursorp" width="100%">
-					</div>
-					
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(2, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 02 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 02 Gris.png" onmouseover="hoverIMG(this, 'dos');" onmouseout="unhoverIMG(this, 'dos')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 2, <? echo $get_nuc; ?>)" <? } else {
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 2, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser == 4) { ?> onclick="agregarMedida(this, 2 , 'dos')" <? }
-					}
-				} ?> class="cursorp" width="100%">
+									else {
+										if ($rolUser != 1 && $rolUser != 4) { ?>
+											onclick="modalDatosMedida(<?= $tipoModal ?>, <?= $idEnlace ?>,<?= $b ?>, <?= $i ?>, <?= $idMedida ?>)" <?
+										}
+										elseif($rolUser == 4) { ?>
+											onclick="
+												if(consultarInputHidden().includes('<?= $i ?>')) {
+													quitarMedida(this, <?= $i; ?>, '<?= $numeros[$i - 1] ?>');
+												}
+												else {
+													agregarMedida(this, <?= $i; ?>, '<?= $numeros[$i - 1] ?>');
+												}
+											" <?
+										}
+									}
+									?>
+									class="cursorp"
+									width="100%"
+								>
+							</div>
+						<?php 
+						if ($i % 2 == 0) { ?>
+						</div> <br>
+						<?php } ?>
+					<? endfor; ?>
 				</div>
-				</div><br>
-				<div class="row">
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(3, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 03 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 03 Gris.png" onmouseover="hoverIMG(this, 'tres');" onmouseout="unhoverIMG(this, 'tres')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 3, <? echo $get_nuc; ?>)" <? } else {
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 3, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser == 4) { ?> onclick="agregarMedida(this, 3 , 'tres')" <? }
-					}
-				} ?> class="cursorp" width="100%">
-					</div>
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(4, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 04 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 04 Gris.png" onmouseover="hoverIMG(this, 'cuatro');" onmouseout="unhoverIMG(this, 'cuatro')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 4, <? echo $get_nuc; ?>)" <? } else{
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 4, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser == 4) { ?> onclick="agregarMedida(this, 4 , 'cuatro')" <? }
-					}
-				} ?> class="cursorp" width="100%">
-				</div>
-				</div><br>
-				<div class="row">
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(5, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 05 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 05 Gris.png" onmouseover="hoverIMG(this, 'cinco');" onmouseout="unhoverIMG(this, 'cinco')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 5, <? echo $get_nuc; ?>)" <? } else {
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 5, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser != 1) { ?> onclick="agregarMedida(this, 5 , 'cinco')" <? }
-					}
-				} ?> class="cursorp" width="100%">
-					</div>
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(6, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 06 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 06 Gris.png" onmouseover="hoverIMG(this, 'seis');" onmouseout="unhoverIMG(this, 'seis')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 6, <? echo $get_nuc; ?>)" <? } else {
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 6, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser == 4) { ?> onclick="agregarMedida(this, 6 , 'seis')" <? }
-					}
-				} ?> class="cursorp" width="100%">
-				</div>
-				</div><br>
-				<div class="row">
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(7, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 07 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 07 Gris.png" onmouseover="hoverIMG(this, 'siete');" onmouseout="unhoverIMG(this, 'siete')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 7, <? echo $get_nuc; ?>)" <? } else{
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 7, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser == 4) {  ?> onclick="agregarMedida(this, 7 , 'siete')" <? }
-					}
-				} ?> class="cursorp" width="100%">
-					</div>
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(8, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 08 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 08 Gris.png" onmouseover="hoverIMG(this, 'ocho');" onmouseout="unhoverIMG(this, 'ocho')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 8, <? echo $get_nuc; ?>)" <? } else {
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 8, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser == 4) { ?> onclick="agregarMedida(this, 8 , 'ocho')" <? }
-					}
-				} ?> class="cursorp" width="100%">
-					</div>
-				</div><br>
-				<div class="row">
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(9, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 09 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 09 Gris.png" onmouseover="hoverIMG(this, 'nueve');" onmouseout="unhoverIMG(this, 'nueve')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 9, <? echo $get_nuc; ?>)" <? } else {
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 9, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser == 4) { ?> onclick="agregarMedida(this, 9 , 'nueve')" <? }
-					}
-				} ?> class="cursorp" width="100%">
-					</div>
-					<div class="col-xs-12 col-sm-6  col-md-6">
-						<img <? if ($a == 1 && in_array(10, $aplicadas)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 10 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 10 Gris.png" onmouseover="hoverIMG(this, 'diez');" onmouseout="unhoverIMG(this, 'diez')" <? if ($a == 1 && (sizeof($getMedidasAplicadas) > 0) && $rolUser != 1) { ?> onclick="aplicarMedida(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 10, <? echo $get_nuc; ?>)" <? } else {
-							if ($rolUser != 1 && $rolUser != 4) { ?> onclick="modalDatosMedida(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 10, <? echo $idMedida; ?>)" <? }
-							elseif($rolUser == 4) { ?> onclick="agregarMedida(this, 10 , 'diez')" <? }	
-					}
-				} ?> class="cursorp" width="100%">
-					</div>
-				</div><br>
-				<?if($rolUser == 4){ 
-					if($a == 1){ 
-						 $getFechaConclusion = getDataGenerales($connMedidas, $idMedida, 0, 0);
-						 if ($getFechaConclusion[0][3] != null) {
-							$fechaConclusion = $getFechaConclusion[0][3]->format('Y-m-d H:i'); 
-						  }
-						 } ?>
-				<div class="row">
-					<div class="col-xs-12 col-sm-12  col-md-3">
-						<label for="fechaConclusion">Fecha de conclusión: <span class="aste">(*)</span></label>
-						<input 
-							id="fechaConclu" 
-							type="datetime-local" 
-							value="<?if($a == 1){ echo $fechaConclusion; } ?>" 
-							name="fechaConclu" 
-							onchange="
-								validateMedidaOK(this.id)
-								validarFechaConclusion(this.id)" 
-							onclick="createOptionsDate()"
-							class="fechas form-control gehit" />
-					</div>
-				</div><br>
-			<? } ?>
 			</div>
 		</div>
 	<? } ?>
@@ -483,7 +499,7 @@ if (isset($_POST["idMedida"])) {
 	?>																			
 	<hr>
 	<div class="form-check">
-	<input class="form-check-input"<? if($banT == 1){echo "checked"; } ?> <? if($banT == 1){ echo "disabled"; } ?> onchange="toggleCheckboxTestigo(this)" type="checkbox" value="" id="flexCheckDefault">
+	<input class="form-check-input"<? if($banT == 1){echo "checked"; } ?> <? if($banT == 1){ echo "disabled"; } ?> onchange="toggleCheckboxTestigo(this)" type="checkbox" value="" id="flexCheckDefault" <?php if ($idMedida == 0) { ?> disabled <? } ?>>
   
   
   <label class="form-check-label" for="flexCheckChecked">¡La medida de Proteccion cuenta con Testigos!</label>
@@ -494,6 +510,60 @@ if (isset($_POST["idMedida"])) {
 			<h5 class="text-on-pannel"><strong>Datos de Testigo en Riesgo</strong></h5>
 
 			<div class="row">
+				<div class="col-xs-12 col-sm-12  col-md-3">
+					<label for="nOficioTestigo">Número de oficio: <span class="aste">(*)</span></label>
+					<input class="form-control" id="nOficioTestigo" type="text" onchange=""
+						value="<? if (sizeof($getDataTestigos) > 0) {
+							echo $getRegistroTestigo['nOficio'];
+						} ?>"
+					>
+				</div>			
+				<div class="col-xs-12 col-sm-12  col-md-3">
+					<label for="fechaAcuerdoTestigo">Fecha del acuerdo: <span class="aste">(*)</span></label>
+					<input 
+						id="fechaAcuerdoTestigo" 
+						type="datetime-local" 
+						value="<? if ($noTestigo > 0) {
+							echo $getRegistroTestigo['fechaAcuerdo']->format('Y-m-d\TH:i');
+						} ?>" 
+						onchange="
+							validateMedidaOK(this.id), 
+							checkDateAcuerdo('<? echo $fecha ?>') " 						
+						name="fechaAcuerdoTestigo" 
+						class="fechas form-control gehit" 
+						min="<? echo $anioActual; ?>-<? echo $m; ?>-01T00:00:00" 
+						max="<? echo $hoy; ?>T23:59:59" 
+						<? if ($rolUser == 1 || $rolUser == 3) { ?> disabled <? } ?> />
+				</div>
+				<div class="col-xs-12 col-sm-12  col-md-3">
+					<label for="fechaConclusionTestigo">Fecha de conclusión: <span class="aste">(*)</span></label>
+					<input 
+						id="fechaConclusionTestigo" 
+						type="datetime-local" 
+						value="<? if ($noTestigo > 0) {
+								echo $getRegistroTestigo['fechaConclusion']->format('Y-m-d\TH:i');
+							} ?>"
+						name="fechaConclusionTestigo" 
+						onchange="
+							validateMedidaOK(this.id)
+							validarFechaConclusion(this.id)" 
+						onclick="createOptionsDate('fechaAcuerdoTestigo', 'fechaConclusionTestigo')"
+						class="fechas form-control gehit" />
+				</div>				
+				<div class="col-xs-12 col-sm-12  col-md-3">
+					<label for="fechaRegistroTestigo">Fecha de registro:</label>
+					<input 
+						class="form-control"						
+						id="fechaRegistroTestigo" 
+						value="<? if ($noTestigo > 0) {
+							echo $getRegistroTestigo['fechaRegistro']->format('Y-m-d\TH:i');
+							}
+							else {
+								echo $fecha;
+							} ?>" 
+						type="datetime-local" 
+						readonly><br>
+				</div>							
 				<div class="col-xs-12 col-sm-12  col-md-2">
 					<label for="nombreVicti">Causa:</label>
 					<input 
@@ -503,26 +573,51 @@ if (isset($_POST["idMedida"])) {
 						} ?> 
 						value="<?php echo $causaP; ?>" 
 						id="causaTest" 
-						type="text">
+						type="text"
+						onchange="validateMedidaOK(this.id)">
 				</div>
-				<div class="col-xs-12 col-sm-12  col-md-4">
+				<div class="col-xs-12 col-sm-12  col-md-2">
 					<label for="nombreVicti">Nombre (s): <span class="aste">(*)</span></label>
-					<input class="form-control" value="" id="nombreTest" type="text">
+					<input class="form-control" value="" id="nombreTest" type="text" onchange="validateMedidaOK(this.id)">
 				</div>
 				<div class="col-xs-12 col-sm-12  col-md-2">
 					<label for="paternoVicti">Paterno: <span class="aste">(*)</span></label>
-					<input class="form-control" value="" id="paternoTest" type="text">
+					<input class="form-control" value="" id="paternoTest" type="text" onchange="validateMedidaOK(this.id)">
 				</div>
 				<div class="col-xs-12 col-sm-12  col-md-2">
 					<label for="maternoVicti">Materno: <span class="aste">(*)</span></label>
-					<input class="form-control" value="" id="maternoTest" type="text">
+					<input class="form-control" value="" id="maternoTest" type="text" onchange="validateMedidaOK(this.id)">
 				</div>
 				<div class="col-xs-12 col-sm-12  col-md-2">
 					<label for="maternoVicti">Estado Actual <span class="aste">(*)</span></label>
-					<select class="form-control" id="estadoTest">
-						<option value="0">Seleccione</option>
+					<select class="form-control" id="estadoTest" onchange="validateMedidaOK(this.id)">
+						<option value="">Seleccione</option>
 						<option class="fontBold" value="1">Vigente</option>
 						<option class="fontBold" value="2">Concluida</option>
+					</select>
+				</div>
+				<div class="col-xs-12 col-sm-12  col-md-1">
+					<label for="generoVicti">Género: <span class="aste">(*)</span></label>
+					<select class="form-control" id="generoTest" onchange="validateMedidaOK(this.id)">
+						<option value="">Seleccione</option>
+						<option class="fontBold" value="1">Masculino</option>
+						<option class="fontBold" value="2">Femenino</option>
+					</select>
+				</div>
+				<div class="col-xs-12 col-sm-12  col-md-1">
+					<label for="edadVictima">Edad: <span class="aste">(*)</span></label>
+					<select class="form-control" id="edadTest" onchange="validateMedidaOK(this.id)">
+						<option value="">Seleccione</option>
+						<option class="fontBold" value="0">Desconocida</option>
+						<?php
+						$valor = -1;
+						for ($i = 1; $i < 12; $i++) {	?>
+							<option class="fontBold" value="<? echo $valor ?>"><? echo $i; ?> Meses</option>
+						<? $valor--;
+						}
+						for ($i = 1; $i <= 100; $i++) {	?>
+							<option class="fontBold" value="<? echo $i; ?> "><? echo $i; ?> Años</option>
+						<? } ?>
 					</select>
 				</div>
 			</div>
@@ -562,6 +657,7 @@ if (isset($_POST["idMedida"])) {
 										<th>Causa Penal</th>
 										<th>Estado Actual Medida</th>
 										<th>Observaciones</th>
+										<th>Editar información</th>
 										<th>Eliminar</th>
 									</tr>
 								</thead>
@@ -576,7 +672,10 @@ if (isset($_POST["idMedida"])) {
 											<td><label style="font-weight: bold !important;"><? echo $getDataTestigos[$h][7]; ?></label></td>
 											<td><? echo $getDataTestigos[$h][8]; ?></td>
 											<td>
-												<center><span onclick="deleteTestigo(<? echo  $getDataTestigos[$h][0]; ?>, <? echo $idMedida; ?>,<? echo $idEnlace; ?>)" title="Eliminar" style="cursor: pointer; color: red; font-size: 18px;" class="glyphicon glyphicon-trash"></span> </center>
+												<center><span onclick="modalDatosMedidaCapturistaInvolucrado(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 0, <? echo $idMedida; ?>, 'testigo', '', '<?= $get_idDelito ?>', <?= $getDataTestigos[$h][0] ?>)" title="Editar" style="cursor: pointer; color: orange; font-size: 18px;" class="glyphicon glyphicon-edit"></span></center>												
+											</td>
+											<td>
+												<center><span onclick="deleteTestigo(<? echo  $getDataTestigos[$h][0]; ?>, <? echo $idMedida; ?>,<? echo $idEnlace; ?>, 1)" title="Eliminar" style="cursor: pointer; color: red; font-size: 18px;" class="glyphicon glyphicon-trash"></span> </center>
 											</td>
 										</tr>
 									<? } ?>
@@ -592,46 +691,57 @@ if (isset($_POST["idMedida"])) {
 				<div class="panel panel-default fd1">
 					<div class="panel-body">
 						<h5 class="text-on-pannel"><strong>Medidas de protección TESTIGO</strong></h5>
-						<div class="row">
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(1, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 01 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 01 Gris.png" onmouseover="hoverIMG(this, 'uno');" onmouseout="unhoverIMG(this, 'uno')" <? if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 1, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(2, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 02 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 02 Gris.png" onmouseover="hoverIMG(this, 'dos');" onmouseout="unhoverIMG(this, 'dos')" <? if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 2, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-						</div><br>
-						<div class="row">
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(3, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 03 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 03 Gris.png" onmouseover="hoverIMG(this, 'tres');" onmouseout="unhoverIMG(this, 'tres')" <? if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 3, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(4, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 04 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 04 Gris.png" onmouseover="hoverIMG(this, 'cuatro');" onmouseout="unhoverIMG(this, 'cuatro')" <? if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 4, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-						</div><br>
-						<div class="row">
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(5, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 05 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 05 Gris.png" onmouseover="hoverIMG(this, 'cinco');" onmouseout="unhoverIMG(this, 'cinco')" <? if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 5, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(6, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 06 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 06 Gris.png" onmouseover="hoverIMG(this, 'seis');" onmouseout="unhoverIMG(this, 'seis')" <? if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 6, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-						</div><br>
-						<div class="row">
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(7, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 07 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 07 Gris.png" onmouseover="hoverIMG(this, 'siete');" onmouseout="unhoverIMG(this, 'siete')" <? if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 7, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(8, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 08 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 08 Gris.png" onmouseover="hoverIMG(this, 'ocho');" onmouseout="unhoverIMG(this, 'ocho')" <? if ($a == 1  && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 8, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-						</div><br>
-						<div class="row">
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(9, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 09 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 09 Gris.png" onmouseover="hoverIMG(this, 'nueve');" onmouseout="unhoverIMG(this, 'nueve')" <? if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 9, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? } } ?> class="cursorp" width="100%">
-							</div>
-							<div class="col-xs-12 col-sm-6  col-md-6">
-								<img <? if ($a == 1 && in_array(10, $aplicadasTest)) { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 10 Fondo.png" <? } else { ?> src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas 10 Gris.png" onmouseover="hoverIMG(this, 'diez');" onmouseout="unhoverIMG(this, 'diez')" <?  if ($a == 1 && $rolUser != 1) { ?> onclick="aplicarMedidaTestigo(<? echo $idEnlace; ?>, <? echo $idMedida; ?>, 10, <? echo $get_nuc; ?>,<? echo $countTestigos; ?>)" <? }	} ?> class="cursorp" width="100%">
-							</div>
-						</div><br>
+						<div class="col-md-12">
+							<?php
+							if ($a == 1 && sizeof($getDataTestigos) > 0 ) { ?>
+								<div class="col-sm-12 col-md-4">
+									<label for="idTestigo">Testigo(s)</label>
+									<select class="form-control" id="idTestigo"
+										onchange="reloadModalMDP(<?= $tipoModal ?>, <?= $idEnlace ?>, <?= $idMedida ?>, <?= $typeArch ?>, <?= $typeCheck ?>, <?= $idVictima ?>,  this.value)">
+										<?php
+										foreach ($getDataTestigos as $testigo) { ?>
+											<option 
+												value="<?= $testigo[0] ?>"
+												<?php
+												if ($testigo[0] == $idTestigo) { 
+													echo 'selected';
+												} ?>
+												> <?= $testigo[11] ?> 
+											</option>
+										<? } ?>
+									</select>
+								</div>
+							<? }?>
+						</div>							
+						<div id="panelMedidasProteccionTestigo">							
+							<?php
+							for ($i = 1; $i <= 10; $i++) :
+								if ($i % 2 != 0) { ?>
+								<div class="row"> <?php } ?>
+									<div class="col-xs-12 col-sm-6 col-md-6">
+										<img
+											src="img/iconosMedidasDeProteccion/iconosMedidas/Medidas <?= str_pad($i, 2, '0', STR_PAD_LEFT) ?> <?= ($a == 1 && $noTestigo > 0 && in_array($i, $aplicadasTest)) ? 'Fondo' : 'Gris' ?>.png"
+											onmouseover="hoverIMG(this, '<?= $numeros[$i - 1] ?>')"
+											<?php
+											if ($noTestigo == 0 || !in_array($i, $aplicadasTest)) { ?>
+												onmouseout="unhoverIMG(this, '<?= $numeros[$i - 1] ?>')"
+											<? } ?>											
+											<?php
+											if ($a == 1 && sizeof($getDataTestigos) > 0 && $rolUser != 1) { 
+												$action = (in_array($i, $aplicadasTest)) ? 'delete' : 'add'; 
+												$total = sizeof($aplicadasTest); ?>
+												onclick="aplicarMedida(<?= $idTestigo ?>, <? echo $idEnlace; ?>, <? echo $idMedida; ?>, <?= $i ?>, <? echo $get_nuc; ?>, '<?= $action ?>', <?= $total ?>, 2)"
+											<? } ?>
+											class="cursorp"
+											width="100%"
+										>
+									</div>
+								<?php 
+								if ($i % 2 == 0) { ?>
+									</div> <br>
+								<?php } ?>
+							<? endfor; ?>
+						</div>						
 					</div>
 				</div>
 			<? } ?>
@@ -659,7 +769,7 @@ if (isset($_POST["idMedida"])) {
 		<? if ( ($rolUser == 2 && $idMedida == 0) || ($rolUser == 4 && $idMedida == 0 ) ) { ?>
 			<button type="button" class="btn btn-primary" onclick="modalDatosMedidaCapturista(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 10, <? echo $idMedida; ?>,0, <? echo $rolUser; ?>)">Guardar información</button>
 		<? } elseif ( ($rolUser == 2  && $idMedida != 0) || ($rolUser == 4  && $idMedida != 0) ) { ?>			
-			<button type="button" class="btn btn-primary" onclick="actualizarDatosCarpeta(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 10, <? echo $idMedida; ?>, <? echo $rolUser; ?>)">Actualizar información</button>
+			<button type="button" class="btn btn-primary" onclick="actualizarDatosCarpeta(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 10, <? echo $idMedida; ?>, <? echo $rolUser; ?>, '<?= $get_idDelito ?>')">Actualizar información</button>
 		<? } elseif ($rolUser == 1) { ?>
 			<button type="button" class="btn btn-primary" onclick="asignar_medida_mp(<? echo $tipoModal; ?>, <? echo $idEnlace; ?>,<? echo $b; ?>, 10, <? echo $idMedida; ?>)">Asignar a Ministerio Publico</button>
 		<? } ?>

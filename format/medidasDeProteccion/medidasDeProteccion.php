@@ -236,7 +236,7 @@ $mesNom = Mes_Nombre($currentmonth);
 								<? } ?>
 							</td>
 						 <? } ?>
-							<td><center><label <?if($rolUser == 1){?>class="glyphicon glyphicon-user"<? }else{ ?>class="glyphicon glyphicon-edit" <? } ?> data-toggle="modal" href="#puestdispos" onclick="reloadModalMDP(1, <?echo $idEnlace; ?>, <?echo $dataMedidasDia[$h][0]; ?>, 0, 0)" style="width: 95%; cursor: pointer; font-weight: bold; color: green;"><?if($rolUser == 1){?> Asignar MP <? }else{ ?> Editar <? } ?> </label></center>
+							<td><center><label <?if($rolUser == 1){?>class="glyphicon glyphicon-user"<? }else{ ?>class="glyphicon glyphicon-edit" <? } ?> data-toggle="modal" href="#puestdispos" onclick="reloadModalMDP(1, <?echo $idEnlace; ?>, <?echo $dataMedidasDia[$h][0]; ?>, 0, 0, null, null)" style="width: 95%; cursor: pointer; font-weight: bold; color: green;"><?if($rolUser == 1){?> Asignar MP <? }else{ ?> Editar <? } ?> </label></center>
 							</td>
 						</tr>
 						<? } ?>

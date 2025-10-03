@@ -13,20 +13,20 @@ $query = "
         DECLARE @idResolucion INT;
         DECLARE @idMedida INT = ?;
         
-        SELECT @idResolucion = idResolucion FROM sire.medidas.resoluciones WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.ratificada WHERE idResolucion = @idResolucion;
-        DELETE FROM sire.medidas.ampliada  WHERE idResolucion = @idResolucion;
-        DELETE FROM sire.medidas.modificada WHERE idResolucion = @idResolucion;
-        DELETE FROM sire.medidas.revocada WHERE idResolucion = @idResolucion;
-        DELETE FROM sire.medidas.imputados WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.victimas WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.cuadernoAntecedentes WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.medidasAplicadas WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.constanciaLlamadas WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.testigo WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.medidasAplicadasTestigo WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.resoluciones WHERE idMedida = @idMedida;
-        DELETE FROM sire.medidas.medidasProteccion WHERE idMedida = @idMedida;
+        SELECT @idResolucion = idResolucion FROM medidas.resoluciones WHERE idMedida = @idMedida;
+        DELETE FROM medidas.ratificada WHERE idResolucion = @idResolucion;
+        DELETE FROM medidas.ampliada  WHERE idResolucion = @idResolucion;
+        DELETE FROM medidas.modificada WHERE idResolucion = @idResolucion;
+        DELETE FROM medidas.revocada WHERE idResolucion = @idResolucion;
+        DELETE FROM medidas.imputados WHERE idMedida = @idMedida;
+        DELETE FROM medidas.victimas WHERE idMedida = @idMedida;
+        DELETE FROM medidas.cuadernoAntecedentes WHERE idMedida = @idMedida;
+        DELETE FROM medidas.medidasAplicadas WHERE idMedida = @idMedida;
+        DELETE FROM medidas.constanciaLlamadas WHERE idMedida = @idMedida;
+        DELETE FROM medidas.testigo WHERE idMedida = @idMedida;
+        DELETE FROM medidas.medidasAplicadasTestigo WHERE idMedida = @idMedida;
+        DELETE FROM medidas.resoluciones WHERE idMedida = @idMedida;
+        DELETE FROM medidas.medidasProteccion WHERE idMedida = @idMedida;
 
         COMMIT;
     END TRY

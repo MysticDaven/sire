@@ -32,7 +32,9 @@ elseif($moduloID == 3){
                      BEGIN TRY 
                        BEGIN TRANSACTION
                            SET NOCOUNT ON                                    
-                                     DELETE FROM medidas.victimas WHERE idVictima = $item_ID AND idMedida = $idMedida
+                                     DELETE FROM medidas.involucrado WHERE idInvolucrado = $item_ID
+                                     DELETE FROM medidas.registro WHERE idInvolucrado = $item_ID
+                                     DELETE FROM medidas.involucrado_medidasAplicadas WHERE idInvolucrado = $item_ID
                                COMMIT
                      END TRY
                      BEGIN CATCH 
@@ -49,7 +51,7 @@ elseif($moduloID == 4){
                      BEGIN TRY 
                        BEGIN TRANSACTION
                            SET NOCOUNT ON                                    
-                                     DELETE FROM medidas.imputados WHERE imputadoID = $item_ID AND idMedida = $idMedida
+                                     DELETE FROM medidas.involucrado WHERE idInvolucrado = $item_ID AND idMedida = $idMedida
                                COMMIT
                      END TRY
                      BEGIN CATCH 
@@ -83,7 +85,7 @@ elseif($moduloID == 6){
                      BEGIN TRY 
                        BEGIN TRANSACTION
                            SET NOCOUNT ON                                    
-                                     DELETE FROM medidas.medidasAplicadas WHERE idMedidaAplicada = $item_ID AND idMedida = $idMedida
+                                     DELETE FROM medidas.involucrado_medidasAplicadas WHERE idMedidaAplicada = $item_ID
                                COMMIT
                      END TRY
                      BEGIN CATCH 
@@ -109,6 +111,23 @@ $queryTransaction = "
                         END CATCH
                         END
                   ";       
+}
+elseif ($moduloID == 8) {
+      $modulo = 'fracciones';
+      $queryTransaction = "      
+                        BEGIN                     
+                        BEGIN TRY 
+                        BEGIN TRANSACTION
+                              SET NOCOUNT ON                                    
+                                    DELETE FROM medidas.involucrado_medidasAplicadas WHERE idMedidaAplicada = $item_ID
+                              COMMIT
+                        END TRY
+                        BEGIN CATCH 
+                              ROLLBACK TRANSACTION
+                              RAISERROR('No se realizo la transaccion',16,1)
+                        END CATCH
+                        END
+                  ";
 }
 
       

@@ -21,32 +21,7 @@ if (isset($_POST['fraccion'])){ $fraccion = $_POST['fraccion']; }
 
 //VARIABLES DEL FORMULARIO OBTENIDO
 if (isset($_POST['numAntecedentes'])){ $numAntecedentes = $_POST['numAntecedentes']; }
-if (isset($_POST['temporalidad'])){ $temporalidad = $_POST['temporalidad']; }
 if (isset($_POST['nuc'])){ $nuc = $_POST['nuc']; }
-if (isset($_POST['fechaConclusion'])){ $fechaConclusion = $_POST['fechaConclusion']; }
-
-
- $fechaAcuerdo = $fechaConclusion; 
- $fechaAcuerdo = str_ireplace("'",'',$fechaAcuerdo);
-
-
-$fechaAcuerdo=str_ireplace('T',' ',$fechaAcuerdo);
-$fechaAcuerdo2=":00";
-$fechaAcuerdo= $fechaAcuerdo.$fechaAcuerdo2;
-
-$array_fecha=  explode(' ', $fechaAcuerdo,2) ;
-$fechaConvertida=$array_fecha[0].''.$array_fecha[1].''; 
-
-$fechaAcuerdo= convierteFecha($array_fecha[0]);
-$fechaAcuerdo.=' '.$array_fecha[1]; 
-
-$fechaAcuerdo = "'".$fechaAcuerdo."'";
-
-function convierteFecha($fecha){
- $array_fecha=  explode('-', $fecha,3) ;
- $fechaConvertida=$array_fecha[2].'-'.$array_fecha[1].'-'.$array_fecha[0];
- return $fechaConvertida;
-} 
 
  $queryTransaction = "
   BEGIN
@@ -54,13 +29,9 @@ function convierteFecha($fecha){
     BEGIN TRANSACTION
      SET NOCOUNT ON
      
-       INSERT INTO medidas.cuadernoAntecedentes (idMedida, cuadernoAntecedentes, temporalidad, fechaConclusion) VALUES($idMedida, '$numAntecedentes', $temporalidad, $fechaAcuerdo)
+      UPDATE medidas.medidasProteccion SET cuadernoAntecedentes = '$numAntecedentes' WHERE idMedida = $idMedida
 
-        UPDATE medidas.medidasProteccion SET fechaConclusion = $fechaAcuerdo WHERE idMedida = $idMedida
-
-       INSERT INTO medidas.medidasAplicadas (idMedida, nuc, idCatFraccion) VALUES($idMedida, $nuc, $fraccion)
-
-       COMMIT
+      COMMIT
       END TRY
      BEGIN CATCH
     ROLLBACK TRANSACTION

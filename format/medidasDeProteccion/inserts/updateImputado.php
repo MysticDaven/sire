@@ -21,8 +21,8 @@ if (isset($_POST['idMedida'])){ $idMedida = $_POST['idMedida']; }
       BEGIN TRANSACTION
        SET NOCOUNT ON
 
-        UPDATE medidas.imputados SET nombre = '$nombreImpu', paterno = '$paternoImpu', materno = '$maternoImpu', genero = $generoImpu, edad = $edadImpu 
-        WHERE imputadoID = $idImputado
+        UPDATE medidas.involucrado SET nombre = '$nombreImpu', paterno = '$paternoImpu', materno = '$maternoImpu', genero = $generoImpu, edad = $edadImpu 
+        WHERE idInvolucrado = $idImputado
 
        COMMIT
       END TRY

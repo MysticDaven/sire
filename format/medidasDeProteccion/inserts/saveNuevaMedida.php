@@ -2,12 +2,11 @@
 header('Content-Type: text/html; charset=utf-8');
 include("../../../Conexiones/conexionMedidas.php");
 
-//////////// ID DE LA MEDIDA DE PROTECCION/////
-if (isset($_POST["idMedida"])){ $idMedida = $_POST["idMedida"]; }
-
+//////////// ID DEL INVOLUCRADO /////
+$idInvolucrado = isset($_POST['idInvolucrado']) ? $_POST['idInvolucrado'] : null;
+$idMedida = isset($_POST['idMedida']) ? $_POST['idMedida'] : null;
 
 //VARIABLES DEL FORMULARIO OBTENIDO
-if (isset($_POST['idEnlace'])){ $idEnlace = $_POST['idEnlace']; }
 if (isset($_POST['fraccion'])){ $fraccion = $_POST['fraccion']; }
 if (isset($_POST['nuc'])){ $nuc = $_POST['nuc']; }
 
@@ -17,7 +16,7 @@ if (isset($_POST['nuc'])){ $nuc = $_POST['nuc']; }
     BEGIN TRANSACTION
      SET NOCOUNT ON
      
-       INSERT INTO medidas.medidasAplicadas (idMedida, nuc, idCatFraccion) VALUES($idMedida, $nuc, $fraccion)
+       INSERT INTO medidas.involucrado_medidasAplicadas (idInvolucrado, idCatFraccion) VALUES($idInvolucrado, $fraccion)
 
        COMMIT
       END TRY

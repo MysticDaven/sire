@@ -4,15 +4,16 @@ include("../../../../Conexiones/Conexion.php");
 include("../../../../Conexiones/conexionMedidas.php");
 include("../../../../funcionesMedidasProteccion.php");
 
+$idInvolucrado = isset($_POST['idInvolucrado']) ? $_POST['idInvolucrado'] : null;
 $idMedida = isset($_POST['idMedida']) ? $_POST['idMedida'] : null;
 $fraccion = isset($_POST['fraccion']) ? $_POST['fraccion'] : null;
 
 $query = "
-    DELETE FROM medidas.medidasAplicadas
-    WHERE idMedida = ? AND idCatFraccion = ?";
+    DELETE FROM medidas.involucrado_medidasAplicadas
+    WHERE idInvolucrado = ? AND idCatFraccion = ?";
 
 $params = [
-    [&$idMedida, SQLSRV_PARAM_IN],
+    [&$idInvolucrado, SQLSRV_PARAM_IN],
     [&$fraccion, SQLSRV_PARAM_IN]
 ];
 

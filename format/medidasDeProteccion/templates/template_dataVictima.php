@@ -4,11 +4,12 @@ include ("../../../Conexiones/conexionSicap.php");
 include("../../../funcionesMedidasProteccion.php");	
 
 if (isset($_POST["idMedida"])){ $idMedida = $_POST["idMedida"]; }	
-if (isset($_POST["idVictima"])){ $idVictima = $_POST["idVictima"]; }	
+$idInvolucrado = isset($_POST['idInvolucrado'])	 ? $_POST['idInvolucrado'] : null;
 if (isset($_POST["fraccion"])){ $fraccion = $_POST["fraccion"]; }	
-if (isset($_POST["idEnlace"])){ $idEnlace = $_POST["idEnlace"]; }	
+if (isset($_POST["idEnlace"])){ $idEnlace = $_POST["idEnlace"]; }
+$section = isset($_POST['section']) ? $_POST['section'] : null;
 
-$data = getDataVictimasEditar($connMedidas, $idVictima); 
+$data = getDataInvolucrado ($connMedidas, $idInvolucrado); 
 $nombre  = $data[0][2];
 $paterno  = $data[0][3];
 $materno  = $data[0][4];
@@ -125,6 +126,6 @@ $correo = $data[0][18];
 								</div>
 							</div></br>
 							<div class="modal-footer">
-								<button type="button" class="btn btn-primary" onclick="actualizarDatosVictima(<?php echo $idEnlace; ?> , <?php echo $fraccion; ?>, <?echo $idMedida ?>, <?echo $idVictima; ?>)">Actualizar información</button>
+								<button type="button" class="btn btn-primary" onclick="actualizarDatosInvolucrado(<?php echo $idEnlace; ?> , <?php echo $fraccion; ?>, <?echo $idMedida ?>, <?echo $idInvolucrado; ?>, <?= $section ?>)">Actualizar información</button>
 							</div>
 

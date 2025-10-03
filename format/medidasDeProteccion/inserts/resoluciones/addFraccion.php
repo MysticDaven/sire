@@ -7,12 +7,15 @@ include("../../../../funcionesMedidasProteccion.php");
 $idMedida = isset($_POST['idMedida']) ? $_POST['idMedida'] : null;
 $fraccion = isset($_POST['fraccion']) ? $_POST['fraccion'] : null;
 $nuc = isset($_POST['nuc']) ? $_POST['nuc'] : null;
+$medidaVictima = isset($_POST['medidaVictima']) ? $_POST['medidaVictima'] : null;
 
 $query = "
-    INSERT INTO medidas.medidasAplicadas(
-        idMedida, 
+    INSERT INTO medidas.medidasAplicadas" . ($medidaVictima === 'true' ? 'Testigo' : '') . "
+    (
+        idMedida,
         nuc, 
-        idCatFraccion)
+        idCatFraccion
+    )
     VALUES (?, ?, ?)";
 
 $params = [

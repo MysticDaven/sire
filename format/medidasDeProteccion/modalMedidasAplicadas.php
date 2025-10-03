@@ -6,6 +6,7 @@ include("../../funcionesMedidasProteccion.php");
 
 $idEnlace = isset($_POST['idEnlace']) ? $_POST['idEnlace'] : null;
 $nuc = isset($_POST['nuc']) ? $_POST['nuc'] : null;
+$medidaVictima = isset($_POST['medidaVictima']) ? $_POST['medidaVictima'] : null;
 
 $getRolUser = getRolUser($connMedidas, $idEnlace);
 $rolUser = $getRolUser[0][0];
@@ -35,14 +36,21 @@ if (isset($_POST["idMedida"])) {
 		$get_estatus = $medidaData[0][11];
 		$a = 1;
 
-		///// MEDIDAS APLICADAS PARA EL RESTIGO /////
-		$getMedidasAplicadasTest = getMedidasAplicadasTest($connMedidas, $idMedida);
-		$aplicadasTest = array();
-		for ($e = 0; $e < sizeof($getMedidasAplicadasTest); $e++) {
-			$aplicadasTest[$e] = $getMedidasAplicadasTest[$e][0];
+		if ($medidaVictima === 'false') {
+			$getMedidasAplicadas = getMedidasAplicadas($connMedidas, $idMedida);
 		}
+		else {
+			$getMedidasAplicadas = getMedidasAplicadasTest($connMedidas, $idMedida);	
+		}
+
+		///// MEDIDAS APLICADAS PARA EL TESTIGO /////
+		// $getMedidasAplicadasTest = getMedidasAplicadasTest($connMedidas, $idMedida);
+		// $aplicadasTest = array();
+		// for ($e = 0; $e < sizeof($getMedidasAplicadasTest); $e++) {
+		// 	$aplicadasTest[$e] = $getMedidasAplicadasTest[$e][0];
+		// }
 		
-		$getMedidasAplicadas = getMedidasAplicadas($connMedidas, $idMedida);
+		// $getMedidasAplicadas = getMedidasAplicadas($connMedidas, $idMedida);
 		$aplicadas = array();
 
 		for ($h = 0; $h < sizeof($getMedidasAplicadas); $h++) {
@@ -71,7 +79,7 @@ $aplicadasM = $aplicadas;
 <body>
 	<div class="panel panel-default fd1">
 		<div class="panel-body">
-			<h5 class="text-on-pannel"><strong>Medidas de Protección VÍCTIMA</strong></h5>
+			<h5 class="text-on-pannel"><strong>Medidas de Protección <?= ($medidaVictima === 'false' ? 'Víctima' : 'Testigo') ?></strong></h5>
 			<?php for ($i = 1; $i <= 10; $i++): ?>
 				<div class="row">
 					<div class="col-xs-12 col-sm-6 col-md-6">

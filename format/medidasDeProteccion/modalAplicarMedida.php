@@ -10,6 +10,10 @@ if (isset($_POST["idMedida"])){ $idMedida = $_POST["idMedida"]; }
 if (isset($_POST["idEnlace"])){ $idEnlace = $_POST["idEnlace"]; }
 if (isset($_POST["fraccion"])){ $fraccion = $_POST["fraccion"]; }
 if (isset($_POST["nuc"])){ $nuc = $_POST["nuc"]; }
+$idInvolucrado = isset($_POST["idInvolucrado"]) ? $_POST["idInvolucrado"] : null;
+$tipoInvolucrado = isset($_POST['tipoInvolucrado']) ? $_POST['tipoInvolucrado'] : null;
+$action = isset($_POST['action']) ? $_POST['action'] : null;
+$total = isset($_POST['total']) ? $_POST['total'] : 0;
 
 $getFraccion = getFracciones($connMedidas, $fraccion);
 $nombre = $getFraccion[0][0];
@@ -24,7 +28,7 @@ $nombre = $getFraccion[0][0];
 	<!--DATOS RESOLUCIÓN-->
 	<div class="panel panel-default fd1">
 		<div class="panel-body">
-			<h5 class="text-on-pannel"><strong>Nueva medida de protección</strong></h5>
+			<h5 class="text-on-pannel"><strong><?= ($action == 'add') ? 'Nueva' : 'Borrar' ?> medida de protección</strong></h5>
 			<div class="row">
 				<div class="col-xs-12 col-sm-12  col-md-12">
 					<label for="nuevaMedida">Medida de protección: <span class="aste">(*)</span></label>
@@ -40,6 +44,12 @@ $nombre = $getFraccion[0][0];
 	
 <div class="modal-footer">
 	<button type="button" class="btn btn-default" onclick="closeModalAplicarMedida()">Cerrar</button>
-	<button type="button" class="btn btn-primary" onclick="saveNuevaMedida(<?echo $idMedida; ?>, <?echo $fraccion; ?>, <?echo $idEnlace; ?>, '<?echo $nuc; ?>')">Aplicar</button>
+	<?php 
+	if ($action == 'add') { ?>
+		<button type="button" class="btn btn-primary" onclick="saveNuevaMedida(<?= $idInvolucrado ?>, <?echo $idMedida; ?>, <?echo $fraccion; ?>, <?echo $idEnlace; ?>, '<?echo $nuc; ?>', <?= $tipoInvolucrado ?>)">Aplicar</button>
+	<? }
+	else { ?>
+		<button type="button" class="btn btn-danger" onclick="deleteFraccionMedida(<?= $idInvolucrado ?>, <?echo $idMedida; ?>, <?= $idEnlace ?>, <?echo $fraccion; ?>, 'false', <?= $total ?>, <?= $tipoInvolucrado ?>)">Borrar</button>
+	<? }?>
 </div>
 

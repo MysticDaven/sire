@@ -4,34 +4,35 @@ include("../../../Conexiones/Conexion.php");
 include("../../../Conexiones/conexionMedidas.php");
 include("../../../funcionesMedidasProteccion.php");
 
-if (isset($_POST["idtestigo"])) {
-	$idtestigo = $_POST["idtestigo"];
-}
+$idInvolucrado = isset($_POST['idInvolucrado']) ? $_POST['idInvolucrado'] : null;
 if (isset($_POST["idMedida"])) {
 	$idMedida = $_POST["idMedida"];
 }
 
-
+$modulo = 'testigo';
 
 $queryTransaction = "
-                     BEGIN                     
-                     BEGIN TRY 
-                       BEGIN TRANSACTION
-                           SET NOCOUNT ON                                    
-                                     DELETE FROM medidas.testigo WHERE idTestigo = $idtestigo 
-                                     DECLARE @countTestigo INT
-                                     SET @countTestigo = (SELECT COUNT(idTestigo) FROM SIRE.medidas.testigo WHERE idMedida = $idMedida)                                   
-                                     IF @countTestigo = 0
-                                      DELETE FROM [SIRE].[medidas].[medidasAplicadasTestigo] WHERE idMedida = $idMedida
-                               COMMIT
-                     END TRY
-                     BEGIN CATCH 
-                           ROLLBACK TRANSACTION
-                           RAISERROR('No se realizo la transaccion',16,1)
-                     END CATCH
-                     END
-                   ";
+  BEGIN TRY
+    BEGIN TRANSACTION
+        SET NOCOUNT ON;
 
+        DECLARE @idInvolucrado INT = $idInvolucrado;
+
+        DELETE FROM medidas.involucrado_medidasAplicadas WHERE idInvolucrado = @idInvolucrado;
+        DELETE FROM medidas.testigo_Prueba WHERE idInvolucrado = @idInvolucrado;
+        DELETE FROM medidas.registro WHERE idInvolucrado = @idInvolucrado;
+        DELETE FROM medidas.involucrado WHERE idInvolucrado = @idInvolucrado;
+
+    COMMIT TRANSACTION;
+  END TRY
+  BEGIN CATCH
+      ROLLBACK TRANSACTION;
+
+      -- Opcional: registrar el error
+      DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+      RAISERROR(@ErrorMessage, 16, 1);
+  END CATCH
+";
 
 $result = sqlsrv_query($connMedidas, $queryTransaction, array(), array("Scrollable" => 'static'));
 $arreglo[0] = "NO";

@@ -19,8 +19,8 @@ if (isset($_POST['edadImpu'])){ $edadImpu = $_POST['edadImpu']; }
     BEGIN TRANSACTION
      SET NOCOUNT ON
      
-       INSERT INTO medidas.imputados (idMedida, nombre, paterno, materno, genero, edad) VALUES($idMedida, '$nombreImpu', '$paternoImpu', '$maternoImpu', $generoImpu, $edadImpu)
-
+       INSERT INTO medidas.involucrado (idMedida, idTipoInvolucrado, nombre, paterno, materno, genero, edad) VALUES($idMedida, 3, '$nombreImpu', '$paternoImpu', '$maternoImpu', $generoImpu, $edadImpu)
+       
        COMMIT
       END TRY
      BEGIN CATCH

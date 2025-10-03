@@ -69,6 +69,9 @@ function modalDatosMedida(tipoModal, idEnlace, b, fraccion, idMedida, sectionAct
 	//console.log(idMedida);
 	//console.log("tipoModal: " + tipoModal);
 	//var idMedida = document.getElementById("idMedida").value;
+	var delito = document.getElementById('idDelito').value;
+	var medidaVictima = validateDelito(delito);
+
 	if (idMedida == 0) {
 		console.log('id de la medida ' + idMedida);
 		var dataValidate = validateDataMedida(); //Validamos que la información principal halla sido llenada previamente
@@ -158,6 +161,7 @@ function modalDatosMedida(tipoModal, idEnlace, b, fraccion, idMedida, sectionAct
 						document.getElementById("datosGenerales").style.display = "none";
 						document.getElementById("contDatosVictima").style.display = "block";
 						document.getElementById("victima").style.display = "block";
+						document.getElementById('testigo').style.display = "none";
 						break;
 					case 'imputados':
 						document.getElementById("datosGenerales").style.display = "none";
@@ -174,18 +178,23 @@ function modalDatosMedida(tipoModal, idEnlace, b, fraccion, idMedida, sectionAct
 					case 'seguimientoMedidas':
 						document.getElementById("datosGenerales").style.display = "none";
 						document.getElementById("seguimientoMedidas").style.display = "block";
+						break;
+					case 'testigo':
+						document.getElementById("datosGenerales").style.display = "none";
+						document.getElementById("testigo").style.display = "block";
+						document.getElementById("contDatosTestigo").style.display = "block";
 				}
 				setTimeout("checkValidaDataModulos(" + idMedida + ");", 100);
 			}
 		}
 		ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		ajax.send("&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&b=" + b + "&tipoModal=" + tipoModal + "&nuc=" + nuc);
+		ajax.send("&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&b=" + b + "&tipoModal=" + tipoModal + "&nuc=" + nuc + "&medidaVictima=" + medidaVictima);
 
 	}
 }
 
 //FUNCION MUESTRA MODAL REGISTRO DE INFORMACION GENERAL DE MEDIDA
-function modalDatosMedidaCapturista(tipoModal, idEnlace, b, fraccion, idMedida, sectionActive, rolUser) {
+function modalDatosMedidaCapturista(tipoModal, idEnlace, b, fraccion, idMedida, sectionActive, rolUser, idDelito) {
 	/////////////////////////// SI EL TIPO MODAL ES UNA NUEVA MEDIDA ENTONCES ES  0 ///////////////////////////////
 	if (idMedida == 0) {
 		if(rolUser == 4){
@@ -195,8 +204,7 @@ function modalDatosMedidaCapturista(tipoModal, idEnlace, b, fraccion, idMedida, 
 		}
 		if (dataValidate[0] == 'true') {
 			$('#cargandoInfo').modal('show');
-
-			if(rolUser == 4){ 	
+			if(rolUser == 4){
 				var contentArrayMedidasAplicadasData = JSON.parse(dataValidate[2]); /*Obtenemos la informacion del arreglo de medidas aplicadas*/
 				var dataMedidasAplicadasArray = {};
 				for (j in contentArrayMedidasAplicadasData) { dataMedidasAplicadasArray[j] = contentArrayMedidasAplicadasData[j]; }
@@ -245,6 +253,8 @@ function modalDatosMedidaCapturista(tipoModal, idEnlace, b, fraccion, idMedida, 
 										var obj = eval("(" + json + ")");
 										if (obj.first == "NO") {
 											console.log("NO SE GUARADORON LOS DATOS");
+											console.log("Medida Errores: " + obj.errors);
+											console.log("Medida Query: " + obj.query);
 											swal("", "No se registro verifique los datos.", "warning");
 										} else {
 											if (obj.first == "SI") {
@@ -266,99 +276,122 @@ function modalDatosMedidaCapturista(tipoModal, idEnlace, b, fraccion, idMedida, 
 		} else {
 			swal("", "Faltan datos por ingresar.", "warning");
 		}
-	} else {
-		cont = document.getElementById('contModalInfoGeneralMedida');
-		var nuc = document.getElementById("nuc").value;
-		ajax = objetoAjax();
-		ajax.open("POST", "format/medidasDeProteccion/modalInfoGeneralMedida2.php");
-		ajax.onreadystatechange = function () {
-			if (ajax.readyState == 4 && ajax.status == 200) {
-				cont.innerHTML = ajax.responseText;
-				$('.dataAutocomplet').select2({ width: '100%', placeholder: "Seleccione", allowClear: false });
-				$('#medidaDeProteccion').modal('hide');
-				$('#infoGeneralMedida').modal('show');
-				switch (sectionActive) {
-					case 'datosGenerales':
-						document.getElementById("datosGenerales").style.display = "block";
-						break;
-					case 'resolucion':
-						document.getElementById("datosGenerales").style.display = "none";
-						document.getElementById("resolucion").style.display = "block";
-						break;
-					case 'victima':
-						document.getElementById("datosGenerales").style.display = "none";
-						document.getElementById("contDatosVictima").style.display = "block";
-						document.getElementById("victima").style.display = "block";
-						break;
-					case 'imputados':
-						document.getElementById("datosGenerales").style.display = "none";
-						document.getElementById("imputados").style.display = "block";
-						break;
-					case 'constanciaLlamadas':
-						document.getElementById("datosGenerales").style.display = "none";
-						document.getElementById("constanciaLlamadas").style.display = "block";
-						break;
-					case 'fracciones':
-						document.getElementById("datosGenerales").style.display = "none";
-						document.getElementById("fracciones").style.display = "block";
-						break;
-				}
-				setTimeout("checkValidaDataModulos(" + idMedida + ");", 100);
-			}
-		}
-		ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		ajax.send("&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&b=" + b + "&tipoModal=" + tipoModal + "&dataPrincipalArray=" + dataPrincipalArray + "&nuc=" + nuc);
-
 	}
 }
 
-function actualizarDatosCarpeta(tipoModal, idEnlace, b, fraccion, idMedida, rolUser) {
+function modalDatosMedidaCapturistaInvolucrado (tipoModal, idEnlace, b, fraccion, idMedida, sectionActive, rolUser, idDelito, idInvolucrado) {
+	cont = document.getElementById('contModalInfoGeneralMedida');
+	var nuc = document.getElementById("nuc").value;
+	var medidaVictima = validateDelito(idDelito);
+	console.log("Medida victima: " + medidaVictima + " idDelito: " + idDelito + " idInvolucrado: " + idInvolucrado + " rolUser: " + rolUser);
+	ajax = objetoAjax();
+	ajax.open("POST", "format/medidasDeProteccion/modalInfoGeneralMedida2.php");
+	ajax.onreadystatechange = function () {
+		if (ajax.readyState == 4 && ajax.status == 200) {
+			cont.innerHTML = ajax.responseText;
+			$('.dataAutocomplet').select2({ width: '100%', placeholder: "Seleccione", allowClear: false });
+			$('#medidaDeProteccion').modal('hide');
+			$('#infoGeneralMedida').modal('show');
+			switch (sectionActive) {
+				case 'datosGenerales':
+					document.getElementById("datosGenerales").style.display = "block";
+					break;
+				case 'resolucion':
+					document.getElementById("datosGenerales").style.display = "none";
+					document.getElementById("resolucion").style.display = "block";
+					break;
+				case 'victima':
+					document.getElementById("datosGenerales").style.display = "none";
+					document.getElementById("contDatosVictima").style.display = "block";
+					document.getElementById("victima").style.display = "block";
+					document.getElementById('testigo').style.display = "none";
+					break;
+				case 'imputados':
+					document.getElementById("datosGenerales").style.display = "none";
+					document.getElementById("imputados").style.display = "block";
+					break;
+				case 'constanciaLlamadas':
+					document.getElementById("datosGenerales").style.display = "none";
+					document.getElementById("constanciaLlamadas").style.display = "block";
+					break;
+				case 'fracciones':
+					document.getElementById("datosGenerales").style.display = "none";
+					document.getElementById("fracciones").style.display = "block";
+					break;
+				case 'testigo':
+					document.getElementById("datosGenerales").style.display = "none";
+					document.getElementById("testigo").style.display = "block";
+					document.getElementById("contDatosTestigo").style.display = "block";						
+			}
+			setTimeout("checkValidaDataModulos(" + idMedida + ");", 100);
+		}
+	}
+	ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	ajax.send("&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&b=" + b + "&tipoModal=" + tipoModal + "&nuc=" + nuc + "&medidaVictima=" + medidaVictima + "idInvolucrado=" + idInvolucrado);
+}
+
+// Función para validar la actualización de delitos
+function validateUpdate(idDelito) {
+	delito = document.getElementById('idDelito').value;
+	delitoValidado = validateDelito(delito);
+	idDelitoValidado = validateDelito(idDelito);
+	return (delitoValidado == idDelitoValidado);
+}
+
+function actualizarDatosCarpeta(tipoModal, idEnlace, b, fraccion, idMedida, rolUser, idDelito) {
+	if (validateUpdate(idDelito)) {		
 		if(rolUser == 4){
-   			var dataValidate = validateDataMedidaGeneralRegionalesUpdate(); //Validamos que la información principal halla sido llenada previamente
+			var dataValidate = validateDataMedidaGeneralRegionalesUpdate(); //Validamos que la información principal halla sido llenada previamente
 		}else{
 			var dataValidate = validateDataMedidaCapturistaUpdate(); //Validamos que la información principal halla sido llenada previamente
 		}
-	if (dataValidate[0] == 'true') {
-		var contentArrayData = JSON.parse(dataValidate[1]); //Obtenemos la informacion del arreglo
-		var dataPrincipalArray = {};
-		for (i in contentArrayData) { dataPrincipalArray[i] = contentArrayData[i]; }
-		dataPrincipalArray = JSON.stringify(dataPrincipalArray);
-		swal({
-			title: "Actualización de datos",
-			html: true,
-			text: "<hr><span>Desea actualizar los datos ingresados?</span>",
-			type: "warning",
-			showCancelButton: true,
-			confirmButtonColor: 'rgba(21,47,74,.9)',
-			confirmButtonText: 'Si. Aplicar',
-			cancelButtonText: "No, Cancelar"
+		if (dataValidate[0] == 'true') {
+			var contentArrayData = JSON.parse(dataValidate[1]); //Obtenemos la informacion del arreglo
+			var dataPrincipalArray = {};
+			for (i in contentArrayData) { dataPrincipalArray[i] = contentArrayData[i]; }
+			dataPrincipalArray = JSON.stringify(dataPrincipalArray);
+			swal({
+				title: "Actualización de datos",
+				html: true,
+				text: "<hr><span>Desea actualizar los datos ingresados?</span>",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonColor: 'rgba(21,47,74,.9)',
+				confirmButtonText: 'Si. Aplicar',
+				cancelButtonText: "No, Cancelar"
 
-		},
-			function (isConfirm) {
-				if (isConfirm) {
-					$.ajax({
-						type: "POST",
-						dataType: 'html',
-						url: "format/medidasDeProteccion/inserts/updateDatosCarpeta.php",
-						data: "&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&b=" + b + "&tipoModal=" + tipoModal + "&dataPrincipalArray=" + dataPrincipalArray + "&rolUser=" + rolUser,
-						success: function (resp) {
-							var json = resp;
-							var obj = eval("(" + json + ")");
-							if (obj.first == "NO") {
-								swal("", "No se actualizo verifique los datos.", "warning");
-							} else {
-								if (obj.first == "SI") {
-									var obj = eval("(" + json + ")");
-									swal("", "Registro actualizado exitosamente.", "success");
-									reloadModalMDP2(1, idEnlace, obj.idMedidaUltimo, 0, 0);
+			},
+				function (isConfirm) {
+					if (isConfirm) {
+						console.log("Información del array principal: " + (dataPrincipalArray));
+						console.log("idDelito: " + idDelito + " rolUser: " + rolUser + " idMedida: " + idMedida + " tipoModal: " + tipoModal + " idEnlace: " + idEnlace + " b: " + b + " fraccion: " + fraccion);
+						$.ajax({
+							type: "POST",
+							dataType: 'html',
+							url: "format/medidasDeProteccion/inserts/updateDatosCarpeta.php",
+							data: "&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&b=" + b + "&tipoModal=" + tipoModal + "&dataPrincipalArray=" + dataPrincipalArray + "&rolUser=" + rolUser,
+							success: function (resp) {
+								var json = resp;
+								var obj = eval("(" + json + ")");
+								if (obj.first == "NO") {
+									swal("", "No se actualizo verifique los datos.", "warning");
+								} else {
+									if (obj.first == "SI") {
+										var obj = eval("(" + json + ")");
+										swal("", "Registro actualizado exitosamente.", "success");
+										reloadModalMDP2(1, idEnlace, obj.idMedidaUltimo, 0, 0);
+									}
 								}
 							}
-						}
-					});
-				}
-			});
-	} else {
-		swal("", "Faltan datos por ingresar.", "warning");
+						});
+					}
+				});
+		} else {
+			swal("", "Faltan datos por ingresar.", "warning");
+		}
+	}
+	else {
+		swal('Error al actualizar información', 'El delito seleccionado no puede ser actualizado', 'error');
 	}
 }
 
@@ -536,6 +569,81 @@ function refreshDataAgente() {
 
 }
 
+// Función para actualizar información de la víctima seleccionada
+async function refreshDataVictima (tipoModal, idEnlace, idMedida, typeArch, typeCheck) {
+	var idVictima = document.getElementById("idVictima").value;
+	console.log('ID de la víctima seleccionada:', idVictima);
+	if (idVictima != "null") {
+		try {
+			const response = await $.ajax({
+				type: "POST",
+				dataType: 'json',
+				url: "format/medidasDeProteccion/getVictimaData.php",
+				data: { idVictima: idVictima }
+			});
+			if (response.success) {
+				console.log('Datos de la víctima obtenidos:', response.array);
+				var data = response.array;
+				let fechas = {
+					fechaAcuerdo: '#fechaAcuerdo',
+					fechaConclusion: '#fechaConclu',
+					fechaRegistro: '#fechaRegistro',
+				};
+
+				$("#nOficio").val(data['nOficio']);
+				$("#nombreVicti").val(data['nombre']);
+				$("#paternoVicti").val(data['paterno']);
+				$("#maternoVicti").val(data['materno']);
+				$("#generoVicti").val(data['genero']);
+				$("#edadVictima").val(data['edad']);
+
+				for (let key in fechas) {
+					let id = fechas[key];
+					let fecha = data[key] ? data[key].date.replace(" ", "T").substring(0, 16) : "";
+					$(id).val(fecha);
+				}
+				
+				let fecha = data['fechaAcuerdo'].date.replace(" ", "T").substring(0, 16);
+				console.log('Fecha formateada:', fecha);
+				$("#fechaAcuerdo").val(fecha);
+
+				await refreshMedidasVictima(tipoModal, idEnlace, idMedida, typeArch, typeCheck);
+			}
+		} catch (error) {
+			console.error('Error al actualizar información:', error);
+		}
+	}
+	else {
+		console.log('No se seleccionó ninguna víctima, limpiando campos.');
+		$("#nOficio").val("");
+		$("#nombreVicti").val("");
+		$("#paternoVicti").val("");
+		$("#maternoVicti").val("");
+		$("#generoVicti").val("");
+		$("#edadVictima").val("");
+		$("#fechaAcuerdo").val("");
+		$("#fechaConclu").val("");
+		$("#fechaRegistro").val("");
+	}
+}
+
+//Función para mostrar las medidas de protección aplicadas al testigo seleccionado
+async function refreshMedidasVictima (tipoModal, idEnlace, idMedida, typeArch, typeCheck) {
+	cont = document.getElementById('medidasProteccionVictima');
+	try {
+		const response = await $.ajax ({
+			type: "POST",
+			url: "format/medidasDeProteccion/templates/medidasProteccionVictima.php",
+			data: { tipoModal: tipoModal, idEnlace: idEnlace, idMedida: idMedida, typeArch: typeArch, typeCheck: typeCheck }
+		});
+		if (ajax.readyState == 4 && ajax.status == 200) {
+			cont.innerHTML = response;
+		}
+	} catch (error ) {
+		console.error('Error al actualizar información de medidas:', error);
+	}
+}
+
 //FUNCION PARA VALIDAR QUE LOS DATOS GENERALES HALLAN SIDO LLENADOS PARA PODER PROSEGUIR CON EL REGISTRO
 function validateDataMedida() {
 	var agentesMP_id = document.getElementById("agentesMP_id").value;
@@ -692,7 +800,9 @@ function validateDataCoordinador() {
 
 }
 
-function reloadModalMDP(tipoModal, idEnlace, idMedida, typeArch, typeCheck) {
+function reloadModalMDP(tipoModal, idEnlace, idMedida, typeArch, typeCheck, idVictima, idTestigo) {	
+	console.log("idVictima al recargar modal: " + idVictima);
+	console.log("idTestigo al recargar modal: " + idTestigo);
 	$('#cargandoInfoModal').modal('show');
 	cont = document.getElementById('contModalMedidasDeProteccion');
 	ajax = objetoAjax();
@@ -704,6 +814,11 @@ function reloadModalMDP(tipoModal, idEnlace, idMedida, typeArch, typeCheck) {
 			$('#cargandoInfoModal').modal('hide');
 			$('#carpetasPendientes').modal('hide');
 			cont.innerHTML = ajax.responseText;
+			let divMedidas = cont.querySelector('#panelMedidasProteccion');
+			var medidaVictima = validateMedidaVictima('idDelito');
+			if (medidaVictima) {
+				divMedidas.style.display = "none";
+			}
 			$('.dataAutocomplet').select2({
 				width: '100%',
 				placeholder: "Seleccione",
@@ -713,7 +828,52 @@ function reloadModalMDP(tipoModal, idEnlace, idMedida, typeArch, typeCheck) {
 		}
 	}
 	ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	ajax.send("&tipoModal=" + tipoModal + "&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&typeArch=" + typeArch + "&typeCheck=" + typeCheck);
+	ajax.send("&tipoModal=" + tipoModal + "&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&typeArch=" + typeArch + "&typeCheck=" + typeCheck + "&idVictima=" + idVictima + "&idTestigo=" + idTestigo);
+}
+
+// Validamos si aplican o no las medidas de protección a la víctima
+function validateMedidaVictima (element) {
+	var delito = document.getElementById("idDelito").value;	
+	validateMedidaOK(element);
+	
+	const campos = [
+		{ id: 'nombreVicti', value: 'NO' },
+		{ id: 'paternoVicti', value: 'APLICA' },
+		{ id: 'maternoVicti', value: 'VÍCTIMA' },
+		{ id: 'edadVictima', value: '' },
+		{ id: 'generoVicti', value: '' }
+	];
+	console.log("Validando delito: " + delito);
+	console.log("El delito " + delito + " aplica medidas de protección.");	
+
+	if (validateDelito(delito)) {
+		// campos.forEach(campo => {
+		// 	const input = document.getElementById(campo.id);
+		// 	if (input) {
+		// 		input.disabled = true;
+		// 		input.value = campo.value;
+		// 	}
+		// });
+		document.getElementById("medidasProteccionVictima").style.display = "none";
+		document.getElementById("datosVictima").style.display = "none";
+	}
+	else {
+		// campos.forEach(campo => {
+		// 	const input = document.getElementById(campo.id);
+		// 	if (input) {
+		// 		input.disabled = false;
+		// 		// input.value = '';
+		// 	}
+		// });
+		document.getElementById("medidasProteccionVictima").style.display = "block";
+		document.getElementById("datosVictima").style.display = "block";
+	}	
+}
+
+// Validamos el tipo de delito si aplican o no las medidas de protección a la víctima
+function validateDelito (delito) {
+	var delitos = ['17'];
+	return delitos.includes(delito);
 }
 
 //Validamos los input para quitar el bordeado rojo una vez que se detecte que contiene informacion
@@ -790,19 +950,18 @@ function validaNucSIGI(nuc, my_callback) {
 
 //Funcion para guardar informacion de la pestaña: DATOS GENERALES
 function saveDatosGenerales(idEnlace, fraccion, idMedida, nuc) {
+	console.log("idEnlace: " + idEnlace + " - fraccion: " + fraccion + " - idMedida: " + idMedida + " - nuc: " + nuc);
 	if (fraccion == 1 || fraccion == 2 || fraccion == 3) {
 		var numAntecedentes = 'No aplica'; numAntecedentes.trim();
 	} else {
 		var numAntecedentes = document.getElementById("numAntecedentes").value; numAntecedentes.trim();
 	}
-	var temporalidad = document.getElementById("temporalidad").value;
-	var fechaConclusion = document.getElementById("fechaConclusion").value;
-	if (numAntecedentes != "" && temporalidad != "" && fechaConclusion != "") {
+	if (numAntecedentes != "") {
 		$.ajax({
 			type: "POST",
 			dataType: 'html',
 			url: "format/medidasDeProteccion/inserts/saveCuadernoAntecedentes.php",
-			data: "&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&numAntecedentes=" + numAntecedentes + "&temporalidad=" + temporalidad + "&fechaConclusion=" + fechaConclusion + "&idMedida=" + idMedida + "&nuc=" + nuc,
+			data: "&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&numAntecedentes=" + numAntecedentes + "&idMedida=" + idMedida + "&nuc=" + nuc,
 			success: function (resp) {
 				var json = resp;
 				var obj = eval("(" + json + ")");
@@ -890,38 +1049,34 @@ function limpiarDatosTestigo() {
 	document.getElementById("estadoTest").value = 0;
 }
 
-
-
-function deleteTestigo(idtestigo, idMedida, idEnlace) {
+function deleteTestigo(idInvolucrado, idMedida, idEnlace, tipoModal) {
 	swal({
-		title: 'Estas seguro de eliminar el Testigo?',
-		text: "Si tienes un unico testigo, se eliminaran las medidas aplicadas!",
-		icon: 'warning',
+		title: '¿Estás seguro de eliminar el Testigo?',
+		text: 'Si tienes un único testigo, se eliminarán las medidas aplicadas.',
+		type: 'warning',
 		showCancelButton: true,
 		confirmButtonColor: '#d68130',
 		cancelButtonColor: '#d33',
-		confirmButtonText: 'Si, Eliminar'
-	},
-		function (isConfirm) {
-
-			if (isConfirm) {
-				ajax = objetoAjax();
-				ajax.open("POST", "format/medidasDeProteccion/inserts/deleteTestigo.php");
-
-				ajax.onreadystatechange = function () {
-					if (ajax.readyState == 4 && ajax.status == 200) {
-						updateTableTestigo(idMedida);
-						reloadModalMDP2(1, idEnlace, idMedida, 0, 0);
-					}
+		confirmButtonText: 'Sí, eliminar',
+	}, function(isConfirm) {
+		if (isConfirm) {
+			console.log("Eliminar testigo: " + idInvolucrado + " de la medida: " + idMedida);
+			ajax = objetoAjax();
+			ajax.open("POST", "format/medidasDeProteccion/inserts/deleteTestigo.php");					
+			ajax.onreadystatechange = function () {
+				if (ajax.readyState == 4 && ajax.status == 200) {
+					var obj = eval("(" + ajax.responseText + ")");
+					updateTableTestigo(idMedida);
+					if (tipoModal == 2) {
+						modalDatosMedida(1, idEnlace, 0, 0, idMedida, obj.modulo);
+					}					
+					// reloadModalMDP2(1, idEnlace, idMedida, 0, 0);
 				}
-				ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-				ajax.send("&idtestigo=" + idtestigo + "&idMedida=" + idMedida);
 			}
-
-
-
-
-		});
+			ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			ajax.send("&idInvolucrado=" + idInvolucrado + "&idMedida=" + idMedida);
+		}
+	});
 }
 
 function updateTableTestigo(idMedida) {
@@ -936,6 +1091,21 @@ function updateTableTestigo(idMedida) {
 	}
 	ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 	ajax.send("&idMedida=" + idMedida);
+}
+
+function updateTableFracciones (idInvolucrado, cont, idEnlace, idMedida) {
+	console.log("Actualizar tabla de fracciones value: " + idInvolucrado + " en el contenedor: " + cont);
+	cont = document.getElementById(cont);
+	ajax = objetoAjax();
+	ajax.open("POST", "format/medidasDeProteccion/templates/tableFracciones.php");
+
+	ajax.onreadystatechange = function () {
+		if (ajax.readyState == 4 && ajax.status == 200) {
+			cont.innerHTML = ajax.responseText;
+		}
+	}
+	ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	ajax.send("&idInvolucrado=" + idInvolucrado + "&idEnlace=" + idEnlace + "&idMedida=" + idMedida);
 }
 
 function toggleCheckboxTestigo(element) {
@@ -956,12 +1126,23 @@ function addTestigo(idMedida, idEnlace) {
 	var maternoTest = document.getElementById("maternoTest").value; maternoTest.trim();
 	var estadoTest = document.getElementById("estadoTest").value;
 	var causaTest = document.getElementById("causaTest").value;
+	var genero = document.getElementById('generoTest').value;
+	var edad = document.getElementById('edadTest').value;
 	var observacionesTest = document.getElementById("observacionesTest").value;
-	var nuc = document.getElementById("nuc").value;
+	// var nuc = document.getElementById("nuc").value;
+	var nOficio = document.getElementById("nOficioTestigo").value;
+	var fechaAcuerdo = document.getElementById("fechaAcuerdoTestigo").value;
+	var fechaConclusion = document.getElementById("fechaConclusionTestigo").value;
+	var fechaRegistro = document.getElementById("fechaRegistroTestigo").value;
 
+	var camposValida = ["nombreTest", "paternoTest", "maternoTest", "generoTest", "edadTest", "nOficioTestigo", "fechaAcuerdoTestigo", "fechaConclusionTestigo", "fechaRegistroTestigo", "estadoTest", "causaTest"];
+	var camposData = [nombreTest, paternoTest, maternoTest, genero, edad, nOficio, fechaAcuerdo, fechaConclusion, fechaRegistro, estadoTest, causaTest];
 
-	if (nombreTest != "" && paternoTest != "" && maternoTest != "" && estadoTest != 0 && causaTest != "") {
+	var camposValidados = validateInvolucrado(camposValida, camposData);
 
+	console.log("Nombre: " + nombreTest + " Paterno: " + paternoTest + " Materno: " + maternoTest + " Estado: " + estadoTest + " Causa: " + causaTest + " Observaciones: " + observacionesTest + " Genero: " + genero + " Edad: " + edad + " N° Oficio: " + nOficio + " Fecha Acuerdo: " + fechaAcuerdo + " Fecha Conclusion: " + fechaConclusion + " Fecha Registro: " + fechaRegistro + " ID MEDIDA: " + idMedida + " ID ENLACE: " + idEnlace);
+	if (camposValidados[0] && camposValidados[1]) {
+		temporalidad = camposValidados[2];
 		cont = document.getElementById('contentTableDataTestigos');
 		ajax = objetoAjax();
 		ajax.open("POST", "format/medidasDeProteccion/inserts/saveTestigo.php");
@@ -972,15 +1153,47 @@ function addTestigo(idMedida, idEnlace) {
 				///// ACTUALIZAR TABLA DE TESSTIGOS ;
 				limpiarDatosTestigo();
 				updateTableTestigo(idMedida);
-				reloadModalMDP2(1, idEnlace, idMedida, 0, 0);
+				reloadModalMDP2(1, idEnlace, idMedida, 0, 0, null, null);
 			}
 		}
 		ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		ajax.send("&idMedida=" + idMedida + "&nombreTest=" + nombreTest + "&paternoTest=" + paternoTest + "&maternoTest=" + maternoTest + "&estadoTest=" + estadoTest + "&causaTest=" + causaTest + "&observacionesTest=" + observacionesTest + "&nuc=" + nuc);
+		ajax.send("&idMedida=" + idMedida + "&nombreTest=" + nombreTest + "&paternoTest=" + paternoTest + "&maternoTest=" + maternoTest + "&estadoTest=" + estadoTest + "&causaTest=" + causaTest + "&observacionesTest=" + observacionesTest + "&genero=" + genero + "&edad=" + edad + "&nOficio=" + nOficio + "&fechaAcuerdo=" + fechaAcuerdo + "&fechaConclusion=" + fechaConclusion + "&temporalidad=" + temporalidad);
 	} else {
-		swal("", "Faltan datos del Testigo, verifique", "warning");
+		msj = "";
+		if (!camposValidados[0]) {
+			msj += "Faltan datos por ingresar \n";
+		}
+		if (!camposValidados[1]) {
+			msj += "La fecha de conclusión debe ser de 30 o 60 días.";
+		}
+		swal("", msj, "warning");
+	}
+}
+
+// Función para validar información de involucrado la fecha de acuerdo debe ser el valor 6 del arreglo y la fecha de conclusión el valor 7 del arreglo
+function validateInvolucrado (camposValida, camposData) {
+	var fechaAcuerdo = camposData[6];
+	var fechaConclusion = camposData[7];
+	var validateTemp = true;
+
+	for (x = 0; x < camposValida.length; x++) {
+		if ($.trim(camposData[x]) == "") {
+			cont = document.getElementById(camposValida[x]);
+			cont.style.border = "1px solid red";
+		}
 	}
 
+	let temporalidad = calculo_temporalidad(fechaConclusion, fechaAcuerdo);
+	console.log("La temporalidad de la medida es de: " + temporalidad + " días");
+
+	if(temporalidad != 30 && temporalidad != 60){
+		temporalidad = 0;
+		validateTemp = false;
+	}
+	validate = camposData.every(valor => valor !== "");
+	
+	var camposValidados = [validate, validateTemp, temporalidad];
+	return camposValidados;
 }
 
 //Funcion para agregar nueva victima
@@ -991,9 +1204,21 @@ function agregarVictima(idMedida, idEnlace) {
 	var maternoVicti = document.getElementById("maternoVicti").value; maternoVicti.trim();
 	var generoVicti = document.getElementById("generoVicti").value;
 	var edadVictima = document.getElementById("edadVictima").value;
+	var nOficio = document.getElementById("nOficio").value;
+	var fechaAcuerdo = document.getElementById("fechaAcuerdo").value;
+	var fechaConclusion = document.getElementById("fechaConclu").value;
+	var fechaRegistro = document.getElementById("fechaRegistro").value;
 
-	if (nombreVicti != "" && paternoVicti != "" && maternoVicti != "" && generoVicti != "" && edadVictima != "") {
-		console.log(nombreVicti);
+	//impirmir los valores capturados
+	console.log("Nombre: " + nombreVicti + " Paterno: " + paternoVicti + " Materno: " + maternoVicti + " Genero: " + generoVicti + " Edad: " + edadVictima + " N° Oficio: " + nOficio + " Fecha Acuerdo: " + fechaAcuerdo + " Fecha Conclusion: " + fechaConclusion + " Fecha Registro: " + fechaRegistro + " ID MEDIDA: " + idMedida + " ID ENLACE: " + idEnlace);
+
+	var camposValida = ["nombreVicti", "paternoVicti", "maternoVicti", "generoVicti", "edadVictima", "nOficio", "fechaAcuerdo", "fechaConclu", "fechaRegistro"];
+	var camposData = [nombreVicti, paternoVicti, maternoVicti, generoVicti, edadVictima, nOficio, fechaAcuerdo, fechaConclusion, fechaRegistro];
+
+	var camposValidados = validateInvolucrado(camposValida, camposData);
+
+	if (camposValidados[0] && camposValidados[1]) {	
+		temporalidad = camposValidados[2];
 		cont = document.getElementById('contentTableDataVictimas');
 		ajax = objetoAjax();
 		ajax.open("POST", "format/medidasDeProteccion/inserts/saveVictima.php");
@@ -1004,17 +1229,28 @@ function agregarVictima(idMedida, idEnlace) {
 				swal("", "Agregado exitosamente, agrege los datos de contacto. ", "success");
 				modalDatosMedida(1, idEnlace, 0, 0, idMedida, 'victima');
 			}
+			else {
+				console.log("No se agrego la victima. Error: " + ajax.status);
+			}
+			console.log("Respuesta del servidor: " + ajax.responseText);
+			console.log("ReadyState: " + ajax.result);
 		}
 		ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		ajax.send("&idMedida=" + idMedida + "&nombreVicti=" + nombreVicti + "&paternoVicti=" + paternoVicti + "&maternoVicti=" + maternoVicti + "&generoVicti=" + generoVicti + "&edadVictima=" + edadVictima);
+		ajax.send("&idMedida=" + idMedida + "&nombreVicti=" + nombreVicti + "&paternoVicti=" + paternoVicti + "&maternoVicti=" + maternoVicti + "&generoVicti=" + generoVicti + "&edadVictima=" + edadVictima + "&nOficio=" + nOficio + "&fechaAcuerdo=" + fechaAcuerdo + "&fechaConclusion=" + fechaConclusion + "&fechaRegistro=" + fechaRegistro + "&temporalidad=" + temporalidad);
 	} else {
-		swal("", "Faltan datos de la victima, verifique", "warning");
+		msj = "";
+		if (!camposValidados[0]) {
+			msj += "Faltan datos por ingresar \n";
+		}
+		if (!camposValidados[1]) {
+			msj += "La fecha de conclusión debe ser de 30 o 60 días.";
+		}
+		swal("", msj, "warning");
 	}
-
 }
 
 function checkValidaDataModulos(idMedida) {
-	//console.log("Validar modulos data" + idMedida);
+	console.log("Validar modulos data" + idMedida);
 
 	$.ajax({
 		type: "POST",
@@ -1046,12 +1282,13 @@ function checkValidaDataModulos(idMedida) {
 			}
 			if (obj.five == "mod5_OK") {
 				$("#mod5").css({ 'color': 'white', 'background': 'green' });
-			} else {
+			} else {				
 				$("#mod5").css({ 'color': 'white', 'background': '#FF9A09' });
 			}
 			if (obj.six == "mod6_OK") {
 				$("#mod6").css({ 'color': 'white', 'background': 'green' });
 			} else {
+				console.log("Mod 6 no OK " + obj.six);
 				$("#mod6").css({ 'color': 'white', 'background': '#FF9A09' });
 			}
 			if (obj.seven == "mod7_OK") {
@@ -1059,12 +1296,17 @@ function checkValidaDataModulos(idMedida) {
 			} else {
 				$("#mod7").css({ 'color': 'white', 'background': '#FF9A09' });
 			}
+			if (obj.eight == "mod8_OK") {
+				$("#mod8").css({ 'color': 'white', 'background': 'green' });
+			} else {
+				$("#mod8").css({ 'color': 'white', 'background': '#FF9A09' });
+			}
 		}
 	});
 }
 
 //Funcion que guarda cada una de las resoluciones en caso de existir.
-function saveDatosResoluciones(idEnlace, fraccion, idMedida, tipoActualizacion, idResolucion, fechaConclusion, medidasAplicadas, nuc, tempPrevia) {
+function saveDatosResoluciones(idEnlace, fraccion, idMedida, tipoActualizacion, idResolucion, fechaConclusion, medidasAplicadas, nuc, tempPrevia, medidaVictima) {
     var ratificacion = document.getElementById("ratificacion").value;
     var modifica = document.getElementById("modifica").value;
     var ampliada = document.getElementById("ampliada").value;
@@ -1082,7 +1324,7 @@ function saveDatosResoluciones(idEnlace, fraccion, idMedida, tipoActualizacion, 
     if (datosValidos) {
         for (var key in acciones) {
             if (acciones[key].valor === '1') {
-                acciones[key].funcion(idEnlace, idResolucion, idMedida, acciones[key].valor, medidasAplicadas, fechaConclusion, nuc, tempPrevia);
+                acciones[key].funcion(idEnlace, idResolucion, idMedida, acciones[key].valor, medidasAplicadas, fechaConclusion, nuc, tempPrevia, medidaVictima);
             } else if (acciones[key].valor !== "") {
                 swal("", "Se debe confirmar el cambio a la medida para poder aplicarse", "warning");
             }
@@ -1130,7 +1372,7 @@ async function saveRatificacion(idEnlace, idResolucion, idMedida, ratificacion) 
 }
 
 //Funcion que guarda en caso de que la medida sea modificada
-async function saveModificada(idEnlace, idResolucion, idMedida, modifica, fraccionesPrevias, fechaPrevia, nuc, tempPrevia) {
+async function saveModificada(idEnlace, idResolucion, idMedida, modifica, fraccionesPrevias, fechaPrevia, nuc, tempPrevia, medidaVictima) {
     var observacion = document.getElementById("observacionModifica").value;
     var fechaConclusion = document.getElementById("fechaConclusionModificada").value;	
     var fraccionesActuales = consultarInputHidden();
@@ -1168,7 +1410,7 @@ async function saveModificada(idEnlace, idResolucion, idMedida, modifica, fracci
 					updateCuadernoAntecedentes(idMedida, nTemp, 'temporalidad');
 				}
                 updateFechaConclusion(idMedida, fechaConclusion);							
-                await updateFraccionesResolucion(idMedida, fraccionesPrevias, fraccionesActuales, nuc);
+                await updateFraccionesResolucion(idMedida, fraccionesPrevias, fraccionesActuales, nuc, medidaVictima);
                 modalDatosMedida(1, idEnlace, 0, 0, obj.idMedidaUltimo, 'resolucion');
             }
         } catch (error) {
@@ -1380,24 +1622,26 @@ async function updateCuadernoAntecedentes(idMedida, value, field){
 }
 
 //Función para eliminar las fracciones existentes
-async function deleteFraccion(idMedida, fraccion) {
+async function deleteFraccion (idInvolucrado, idMedida, fraccion, medidaVictima) {
+	console.log("Medida Victima: " + medidaVictima + " Fraccion a eliminar: " + fraccion + " ID Involucrado: " + idInvolucrado);
     try {
         await $.ajax({
             type: "POST",
             dataType: 'html',
             url: "format/medidasDeProteccion/inserts/resoluciones/deleteFraccion.php",
-            data: "&idMedida=" + idMedida + "&fraccion=" + fraccion,
+            data: "&idInvolucrado=" + idInvolucrado + "&fraccion=" + fraccion + "&idMedida=" + idMedida,
             success: function (resp) {
                 var json = resp;
                 var obj = eval("(" + json + ")");
                 if (obj.first == "NO") {
-                    obj.error.forEach(element => {
+                    obj.errors.forEach(element => {
                         console.log(element);
                     });
-                    console.log("ERRORES: " + obj.error);
+                    console.log("ERRORES: " + obj.stmt);
                 }
                 if (obj.first == "SI") {
-                    // console.log("SE HAN BORRADO LAS FRACCIONES");	MUESTRA QUE SE BORRARON LAS FRACCIONES
+                    console.log("SE HAN BORRADO LAS FRACCIONES");
+					$('#aplicarMedidaTestigo').modal('hide');
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -1411,12 +1655,12 @@ async function deleteFraccion(idMedida, fraccion) {
 }
 
 //Función para agregar las fracciones nuevas
-function addFraccion(idMedida, fraccion, nuc){
+function addFraccion (idMedida, fraccion, nuc, medidaVictima) {
 	$.ajax({
 		type: "POST",
 		dataType: 'html',
 		url: "format/medidasDeProteccion/inserts/resoluciones/addFraccion.php",
-		data: "&idMedida=" + idMedida + "&fraccion=" + fraccion + "&nuc=" + nuc,
+		data: "&idMedida=" + idMedida + "&fraccion=" + fraccion + "&nuc=" + nuc + "&medidaVictima=" + medidaVictima,
 		success: function (resp) {
 			var json = resp;
 			var obj = eval("(" + json + ")");
@@ -1438,14 +1682,14 @@ function addFraccion(idMedida, fraccion, nuc){
 }
 
 //Función para actualizar las fracciones de la medida de proteccion una vez que se ha modificado
-async function updateFraccionesResolucion(idMedida, fraccionesPrevias, fraccionesActuales, nuc){
+async function updateFraccionesResolucion (idMedida, fraccionesPrevias, fraccionesActuales, nuc, medidaVictima) {
 	//console.log("NUC: " + nuc);
     if(fraccionesActuales != ""){
 		for (const fraccion of fraccionesPrevias) {			
-			await deleteFraccion(idMedida, fraccion);
+			await deleteFraccion(idMedida, fraccion, medidaVictima);
 		}
 		for(const fraccion of fraccionesActuales){
-			await addFraccion(idMedida, fraccion, nuc);
+			await addFraccion(idMedida, fraccion, nuc, medidaVictima);
 		}		
 	}
 }
@@ -1655,10 +1899,21 @@ function updateResolucionUnit(idEnlace, idResolucion, idMedida, resolucionV) {
 	}
 }
 
-function agregarDatosContacto(idVictima, fraccion, idMedida, idEnlace) {
+function agregarDatosContacto(idInvolucrado, fraccion, idMedida, idEnlace, section) {
 	//var datosVictima = document.getElementById("datosVictima").value;		
-
-	cont = document.getElementById('contDatosVictima');
+	console.log("ID INVOLUCRADO: " + idInvolucrado + " FRACCION: " + fraccion + " ID MEDIDA: " + idMedida + " ID ENLACE: " + idEnlace + " SECCION2: " + section);
+	if (section) {
+		div = 'contDatosVictima';
+		document.getElementById('contDatosTestigo').replaceChildren();
+		// document.getElementById('contDatosVictima').style.display = 'block';
+	}
+	else {
+		document.getElementById('contDatosVictima').replaceChildren();
+		// document.getElementById('contDatosTestigo').style.display = 'block';
+		div = 'contDatosTestigo';
+	}
+	cont = document.getElementById(div);
+ 	
 	ajax = objetoAjax();
 	ajax.open("POST", "format/medidasDeProteccion/templates/template_dataVictima.php");
 
@@ -1673,7 +1928,7 @@ function agregarDatosContacto(idVictima, fraccion, idMedida, idEnlace) {
 		}
 	}
 	ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	ajax.send("&idVictima=" + idVictima + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&idEnlace=" + idEnlace);
+	ajax.send("&idInvolucrado=" + idInvolucrado + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&idEnlace=" + idEnlace + "&section=" + section);
 }
 
 function reloadDataMunicipios() {
@@ -1698,7 +1953,8 @@ function reloadDataMunicipios() {
 }
 
 //Funcion para guardar informacion de la pestaña: DATOS GENERALES
-function actualizarDatosVictima(idEnlace, fraccion, idMedida, idVictima) {
+// Esta función se encarga de actualizar los datos de la víctima en la medida de protección. Se adaptó para que de igual forma funcione para testigos.
+function actualizarDatosInvolucrado (idEnlace, fraccion, idMedida, idInvolucrado, section) {
 	var nombreVictiEdita = document.getElementById("nombreVictiEdita").value; nombreVictiEdita.trim();
 	var paternoVictiEdita = document.getElementById("paternoVictiEdita").value; paternoVictiEdita.trim();
 	var maternoVictiEdita = document.getElementById("maternoVictiEdita").value; maternoVictiEdita.trim();
@@ -1715,12 +1971,14 @@ function actualizarDatosVictima(idEnlace, fraccion, idMedida, idVictima) {
 	var codigoPostal = document.getElementById("codigoPostal").value;
 	var correoElectronico = document.getElementById("correoElectronico").value;
 
+	sectionActive = section ? 'victima' : 'testigo';
+
 	if (nombreVictiEdita != "" && paternoVictiEdita != "" && maternoVictiEdita != "" && generoVictiEdita != "" && edadVictimaEdita != "" && entidad != "" && municipio != "" && colonia != "" && calle != "" && telefonoUno != "") {
 		$.ajax({
 			type: "POST",
 			dataType: 'html',
 			url: "format/medidasDeProteccion/inserts/actualizarDatosVictima.php",
-			data: "&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&idVictima=" + idVictima + "&nombreVictiEdita=" + nombreVictiEdita + "&paternoVictiEdita=" + paternoVictiEdita
+			data: "&idEnlace=" + idEnlace + "&fraccion=" + fraccion + "&idMedida=" + idMedida + "&idInvolucrado=" + idInvolucrado + "&nombreVictiEdita=" + nombreVictiEdita + "&paternoVictiEdita=" + paternoVictiEdita
 				+ "&maternoVictiEdita=" + maternoVictiEdita + "&generoVictiEdita=" + generoVictiEdita + "&edadVictimaEdita=" + edadVictimaEdita + "&entidad=" + entidad + "&municipio=" + municipio
 				+ "&colonia=" + colonia + "&calle=" + calle + "&numero=" + numero + "&telefonoUno=" + telefonoUno + "&telefonoDos=" + telefonoDos + "&codigoPostal=" + codigoPostal + "&correoElectronico=" + correoElectronico,
 			success: function (resp) {
@@ -1734,7 +1992,7 @@ function actualizarDatosVictima(idEnlace, fraccion, idMedida, idVictima) {
 						swal("", "Datos de contacto actualizados. ", "success");
 						//checkValidaDataModulos(obj.idMedidaUltimo);
 						//setTimeout("modalDatosMedida(1, "+idEnlace+", 0 , 0, "+obj.idMedidaUltimo+");",100);
-						modalDatosMedida(1, idEnlace, 0, 0, obj.idMedidaUltimo, 'victima');
+						modalDatosMedida(1, idEnlace, 0, 0, obj.idMedidaUltimo, sectionActive);
 						//setTimeout("checkValidaDataModulos("+obj.idMedidaUltimo+");",100);
 					}
 				}
@@ -2063,9 +2321,9 @@ function editaConstanciaLlamadas(idEnlace, idConstanciaLlamada, idMedida, tipoAc
 }
 
 ////// MODAL MEDIDAD APLICAR A TESTIGOS
-function aplicarMedidaTestigo(idEnlace, idMedida, fraccion, nuc, countTestigos) {
-
-	if (countTestigos > 0) {
+function aplicarMedidaTestigo(idEnlace, idMedida, fraccion, nuc, countTestigos, action, total) {
+	console.log("IDEnlace: " + idEnlace + " IDMedida: " + idMedida + " Fraccion: " + fraccion + " NUC: " + nuc + " CountTestigos: " + countTestigos + " Action: " + action + " Total: " + total);
+	if (countTestigos > 0) {		
 		cont = document.getElementById('contModalAplicarMedidaTestigo');
 		ajax = objetoAjax();
 		ajax.open("POST", "format/medidasDeProteccion/modalAplicarMedidaTestigo.php");
@@ -2083,7 +2341,7 @@ function aplicarMedidaTestigo(idEnlace, idMedida, fraccion, nuc, countTestigos) 
 			}
 		}
 		ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		ajax.send("&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&fraccion=" + fraccion + "&nuc=" + nuc);
+		ajax.send("&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&fraccion=" + fraccion + "&nuc=" + nuc + "&action=" + action + "&total=" + total);
 	} else {
 		swal("", "Debe ingresar al menos un testigo para poder agregar medidas.", "warning");
 	}
@@ -2096,8 +2354,8 @@ function closeModalAplicarMedidaTestigo() {
 }
 
 //FUNCION MUESTRA MODAL DE MEDIDAS APLICADAS
-function modalMedidas(idEnlace, idMedida, nuc) {
-    console.log("IDEnlace: " + idEnlace + " IDMedida: " + idMedida + " NUC: " + nuc);
+function modalMedidas(idEnlace, idMedida, nuc, medidaVictima) {
+    console.log("IDEnlace: " + idEnlace + " IDMedida: " + idMedida + " NUC: " + nuc + " Medida Victima: " + medidaVictima);
     const cont = document.getElementById('contModalMedidas');
     const ajax = objetoAjax();
     ajax.open("POST", "format/medidasDeProteccion/modalMedidasAplicadas.php");
@@ -2109,12 +2367,13 @@ function modalMedidas(idEnlace, idMedida, nuc) {
     }
 
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    ajax.send("&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&nuc=" + nuc);
+    ajax.send("&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&nuc=" + nuc + "&medidaVictima=" + medidaVictima);
 }
 
 
 //FUNCION MUESTRA MODAL APLICAR MEDIDAS
-function aplicarMedida(idEnlace, idMedida, fraccion, nuc) {
+function aplicarMedida(idInvolucrado, idEnlace, idMedida, fraccion, nuc, action, total, tipoInvolucrado) {
+	console.log("idInvolucrado: " + idInvolucrado + " IDEnlace: " + idEnlace + " IDMedida: " + idMedida + " Fraccion: " + fraccion + " NUC: " + nuc + " Action: " + action + " Total: " + total);
 	cont = document.getElementById('contModalAplicarMedida');
 	ajax = objetoAjax();
 	ajax.open("POST", "format/medidasDeProteccion/modalAplicarMedida.php");
@@ -2132,7 +2391,7 @@ function aplicarMedida(idEnlace, idMedida, fraccion, nuc) {
 		}
 	}
 	ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	ajax.send("&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&fraccion=" + fraccion + "&nuc=" + nuc);
+	ajax.send("&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&fraccion=" + fraccion + "&nuc=" + nuc + "&action=" + action + "&total=" + total + "&idInvolucrado=" + idInvolucrado + "&tipoInvolucrado=" + tipoInvolucrado);
 }
 
 function closeModalAplicarMedida() {
@@ -2141,13 +2400,12 @@ function closeModalAplicarMedida() {
 }
 
 //Funcion para editar informacion de la pestaña: IMPUTADOS
-function saveNuevaMedida(idMedida, fraccion, idEnlace, nuc) {
-	console.log("Fraccion: " + fraccion + "NUC: " + nuc);
+function saveNuevaMedida(idInvolucrado, idMedida, fraccion, idEnlace, nuc, tipoInvolucrado) {
 	$.ajax({
 		type: "POST",
 		dataType: 'html',
 		url: "format/medidasDeProteccion/inserts/saveNuevaMedida.php",
-		data: "&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&fraccion=" + fraccion + "&nuc=" + nuc,
+		data: "&idInvolucrado=" + idInvolucrado + "&fraccion=" + fraccion + "&idMedida=" + idMedida,
 		success: function (resp) {
 			var json = resp;
 			var obj = eval("(" + json + ")");
@@ -2159,12 +2417,45 @@ function saveNuevaMedida(idMedida, fraccion, idEnlace, nuc) {
 					swal("", "Medida de protección aplicada exitosamente. ", "success");
 					//checkValidaDataModulos(obj.idMedidaUltimo);
 					//setTimeout("modalDatosMedida(1, "+idEnlace+", 0 , 0, "+obj.idMedidaUltimo+");",100);
-					reloadModalMDP2(1, idEnlace, idMedida, 0, 0);
+					if (tipoInvolucrado == 1) {
+						reloadModalMDP2(1, idEnlace, idMedida, 0, 0, idInvolucrado, null);
+					}
+					else {
+						reloadModalMDP2(1, idEnlace, idMedida, 0, 0, null, idInvolucrado);
+					}					
 					//setTimeout("checkValidaDataModulos("+obj.idMedidaUltimo+");",100);
 				}
 			}
 		}
 	});
+}
+
+async function deleteFraccionMedida (idInvolucrado, idMedida, idEnlace, fraccion, medidaVictima, total, tipoInvolucrado) {
+	if (total > 1) {
+		await deleteFraccion(idInvolucrado, idMedida, fraccion, medidaVictima);
+		swal("", "Medida de protección eliminada exitosamente.", "success");
+		if (tipoInvolucrado == 1) {
+			reloadModalMDP2(1, idEnlace, idMedida, 0, 0, idInvolucrado, null);
+		}
+		else {
+			reloadModalMDP2(1, idEnlace, idMedida, 0, 0, null, idInvolucrado);			
+		}
+	}
+	else {
+		swal("", "Debe existir al menos una fracción asociada a la medida de protección.", "warning");
+	}
+
+}
+
+async function deleteFraccionMedidaTestigo (idMedida, idEnlace, fraccion, medidaVictima, total) {
+	if (total > 1) {
+		await deleteFraccion(idMedida, fraccion, medidaVictima);
+		swal("", "Medida de protección eliminada exitosamente.", "success");
+		reloadModalMDP2(1, idEnlace, idMedida, 0, 0);
+	}
+	else {
+		swal("", "Debe existir al menos una fracción asociada a la medida de protección.", "warning");
+	}
 }
 
 function saveNuevaMedidaTestigo(idMedida, fraccion, idEnlace, nuc) {
@@ -2196,7 +2487,11 @@ function saveNuevaMedidaTestigo(idMedida, fraccion, idEnlace, nuc) {
 
 
 
-function reloadModalMDP2(tipoModal, idEnlace, idMedida, typeArch, typeCheck) {
+function reloadModalMDP2(tipoModal, idEnlace, idMedida, typeArch, typeCheck, idVictima, idTestigo) {
+	console.log("idVictima al recargar modal: " + idVictima);
+	console.log("idTestigo al recargar modal: " + idTestigo);
+	if (idVictima == null) { idVictima = 'undefined'; }
+	if (idTestigo == null) { idTestigo = 'undefined'; }
 	$('#cargandoInfoModal').modal('show');
 	cont = document.getElementById('contModalMedidasDeProteccion');
 	ajax = objetoAjax();
@@ -2207,6 +2502,11 @@ function reloadModalMDP2(tipoModal, idEnlace, idMedida, typeArch, typeCheck) {
 			$('#medidaDeProteccion').modal('show');
 			$('#cargandoInfoModal').modal('hide');
 			cont.innerHTML = ajax.responseText;
+			let divMedidas = cont.querySelector('#panelMedidasProteccion');
+			var medidaVictima = validateMedidaVictima('idDelito');
+			if (medidaVictima) {
+				divMedidas.style.display = 'none';
+			}
 			$('.dataAutocomplet').select2({
 				width: '100%',
 				placeholder: "Seleccione",
@@ -2216,7 +2516,7 @@ function reloadModalMDP2(tipoModal, idEnlace, idMedida, typeArch, typeCheck) {
 		}
 	}
 	ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	ajax.send("&tipoModal=" + tipoModal + "&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&typeArch=" + typeArch + "&typeCheck=" + typeCheck);
+	ajax.send("&tipoModal=" + tipoModal + "&idEnlace=" + idEnlace + "&idMedida=" + idMedida + "&typeArch=" + typeArch + "&typeCheck=" + typeCheck + "&idVictima=" + idVictima + "&idTestigo=" + idTestigo);
 }
 
 function reloadDaysMonthReport(idEnlace, section) {
@@ -2713,7 +3013,7 @@ function deleteItem(moduloID, item_ID, idEnlace, idMedida, banderaTotal) {
 		function (isConfirm) {
 
 			if (isConfirm) {
-				if (moduloID != 3 && moduloID != 4 && moduloID != 6) {
+				if (moduloID != 3 && moduloID != 4 && moduloID != 6 && moduloID != 8) {
 					$.ajax({
 						type: "POST",
 						dataType: 'html',
@@ -2736,8 +3036,7 @@ function deleteItem(moduloID, item_ID, idEnlace, idMedida, banderaTotal) {
 				} else if (moduloID == 3 || moduloID == 4) {
 					if (banderaTotal == 1) {
 						alert('Este elemento no se puede eliminar del registro, debe de haber al menos un registro asociado.');
-					} else {
-						console.log(moduloID + ' ' + banderaTotal);
+					} else {						
 						$.ajax({
 							type: "POST",
 							dataType: 'html',
@@ -2758,7 +3057,7 @@ function deleteItem(moduloID, item_ID, idEnlace, idMedida, banderaTotal) {
 							}
 						});
 					}
-				} else if (moduloID == 6) {
+				} else if (moduloID == 6 || moduloID == 8) {
 					console.log('aqui entra');
 					if (banderaTotal == 1) {
 						alert('Este elemento no se puede eliminar del registro, debe de haber al menos una fracción asociada al registro, aplique otra fracción antes de eliminar esta.');
@@ -2857,17 +3156,17 @@ function deleteItemV(moduloID, item_ID, idEnlace, idMedida, banderaTotal) {
 		showCancelButton: true,
 		confirmButtonColor: 'rgba(21,47,74,.9)',
 		confirmButtonText: 'Si. Eliminar',
-		cancelButtonText: "No, Cancelar"
-
+		cancelButtonText: "No, Cancelar",
+		closeOnConfirm: false
 	},
 		function (isConfirm) {
 
 			if (isConfirm) {
 
 				if (banderaTotal == 1) {
-					alert('Este elemento no se puede eliminar del registro, debe de haber al menos un registro asociado.');
+					swal('', 'Este elemento no se puede eliminar del registro, debe de haber al menos un registro asociado.', 'warning');
 				} else {
-					console.log(moduloID + ' ' + banderaTotal);
+					console.log('ModuloID: ' + moduloID + ' BanderaTotal: ' + banderaTotal + ' ItemID: ' + item_ID);
 					$.ajax({
 						type: "POST",
 						dataType: 'html',
@@ -2902,9 +3201,9 @@ function checkDateAcuerdo(fecha) {
 	//createOptionsDate();
 }
 
-function createOptionsDate(){	
-	var fechaAcuerdo = document.getElementById("fechaAcuerdo").value;
-	const fechaConclusion = document.getElementById("fechaConclu");
+function createOptionsDate(idAcuerdo, idConclusion){
+	var fechaAcuerdo = document.getElementById(idAcuerdo).value;
+	const fechaConclusion = document.getElementById(idConclusion);
 	if(fechaAcuerdo != ''){
 		var date30 = new Date(fechaAcuerdo);
 		var date60 = new Date(fechaAcuerdo);
@@ -2955,36 +3254,54 @@ function validarFechaConclusion(element){
 	}
 }
 
-function validateDataMedidaGeneralRegionales() {
- 	var agentesMP_id = document.getElementById("agentesMP_id").value;
+function validateDataMedidaGeneralRegionales () {
+	var agentesMP_id = document.getElementById("agentesMP_id").value;
 	var idCargo = document.getElementById("idCargo").value;
 	var idFuncion = document.getElementById("idFuncion").value;
 	var idAdscripcion = document.getElementById("idAdscripcion").value;
 	var idFiscAdscrito = document.getElementById("idFiscAdscrito").value;//No ocupa validacion
-	var fechaConclu = document.getElementById("fechaConclu").value;
 	var idCoorporacion = document.getElementById("idCoorporacion").value;
 
 	var nuc = document.getElementById("nuc").value;
 	var idDelito = document.getElementById("idDelito").value;
-	var fechaAcuerdo = document.getElementById("fechaAcuerdo").value;
-	var fechaRegistro = document.getElementById("fechaRegistro").value;
-	var nOficio = document.getElementById("nOficio").value;
-
- 	var nombreVicti = document.getElementById("nombreVicti").value; 
-	var paternoVicti = document.getElementById("paternoVicti").value; 
-	var maternoVicti = document.getElementById("maternoVicti").value; 
-	var generoVicti = document.getElementById("generoVicti").value; 
- 	var edadVictima = document.getElementById("edadVictima").value; 
-
 	var idFiscaliaProc = document.getElementById("idFiscaliaProc").value;
+	var medidaVictima = validateDelito(idDelito);
+	console.log("Medida victima: " + medidaVictima);
 
-	var inputMedidaHidden = document.getElementsByClassName("inputMedidaHidden"); //Para obtener la cantidad de inputs que se agregaron dinamicamente
-	var totalInputs = inputMedidaHidden.length;
+	var numerosValidos = true;
+	var arrayCamposValida = [];
+	var arrayCamposData = [];
+	var arrayCamposEnteros = [];
 
-	//Arreglo de campos para validar con color rojo, si se agrega un nuevo campo, agregar en el arreglo para incluir en la validacion de color
-	var arrayCamposValida = ["agentesMP_id_div", "idCargo", "idFuncion", "idAdscripcion", "nuc", "idDelito_div", "fechaAcuerdo", "fechaRegistro", "nombreVicti", "paternoVicti", "maternoVicti", "generoVicti", "edadVictima", "idFiscaliaProc_div" , "fechaConclu", "idCoorporacion", "nOficio"];
-	//Arreglo de variables de informacion, donde se verifica si hay informacion en dicha variable
-	var arrayCamposData = [agentesMP_id, idCargo, idFuncion, idAdscripcion, nuc, idDelito, fechaAcuerdo, fechaRegistro, nombreVicti, paternoVicti, maternoVicti, generoVicti, edadVictima, idFiscaliaProc, fechaConclu, idCoorporacion, nOficio];
+	if (!medidaVictima) {
+		var nombreVicti = document.getElementById("nombreVicti").value; 
+		var paternoVicti = document.getElementById("paternoVicti").value; 
+		var maternoVicti = document.getElementById("maternoVicti").value; 
+		var generoVicti = document.getElementById("generoVicti").value; 
+		var edadVictima = document.getElementById("edadVictima").value;
+		var fechaConclu = document.getElementById("fechaConclu").value;
+		var fechaAcuerdo = document.getElementById("fechaAcuerdo").value;
+		var fechaRegistro = document.getElementById("fechaRegistro").value;
+		var nOficio = document.getElementById("nOficio").value;		
+		var inputMedidaHidden = document.getElementsByClassName("inputMedidaHidden"); //Para obtener la cantidad de inputs que se agregaron dinamicamente
+		var totalInputs = inputMedidaHidden.length;
+
+		//Arreglo de campos para validar con color rojo, si se agrega un nuevo campo, agregar en el arreglo para incluir en la validacion de color
+		arrayCamposValida = ["agentesMP_id_div", "idCargo", "idFuncion", "idAdscripcion", "nuc", "idDelito_div", "fechaAcuerdo", "fechaRegistro", "nombreVicti", "paternoVicti", "maternoVicti", "generoVicti", "edadVictima", "idFiscaliaProc_div" , "fechaConclu", "idCoorporacion", "nOficio"];
+
+		//Arreglo de variables de informacion, donde se verifica si hay informacion en dicha variable
+		arrayCamposData = [agentesMP_id, idCargo, idFuncion, idAdscripcion, nuc, idDelito, fechaAcuerdo, fechaRegistro, nombreVicti, paternoVicti, maternoVicti, generoVicti, edadVictima, idFiscaliaProc, fechaConclu, idCoorporacion, nOficio];
+
+		arrayCamposEnteros.push(totalInputs);
+	}
+	else {
+		//Arreglo de campos para validar con color rojo, si se agrega un nuevo campo, agregar en el arreglo para incluir en la validacion de color
+		arrayCamposValida = ["agentesMP_id_div", "idCargo", "idFuncion", "idAdscripcion", "nuc", "idDelito_div", "idFiscaliaProc_div", "idCoorporacion"];
+
+		//Arreglo de variables de informacion, donde se verifica si hay informacion en dicha variable
+		arrayCamposData = [agentesMP_id, idCargo, idFuncion, idAdscripcion, nuc, idDelito, idFiscaliaProc, idCoorporacion];
+	}
+
 	//Bucle del tamaño de los campos, se verifica si la variable tiene información, si esta no tiene coloreamos el input de color rojo
 	for (x = 0; x < arrayCamposValida.length; x++) {
 		if ($.trim(arrayCamposData[x]) == "") {
@@ -2992,27 +3309,25 @@ function validateDataMedidaGeneralRegionales() {
 			cont.style.border = "1px solid red";
 		}
 	}
+	if (!medidaVictima) {
 	//Obtenemos la temporalidad de la medida aplicada en base a la fecha del acuerdo y fecha de conclusión.
-	let temporalidad = calculo_temporalidad(fechaConclu, fechaAcuerdo);
-	console.log("La temporalidad de la medida es de: " + temporalidad + " días");
+		var temporalidad = calculo_temporalidad(fechaConclu, fechaAcuerdo);
+		console.log("La temporalidad de la medida es de: " + temporalidad + " días");
 
-	if(temporalidad != 30 && temporalidad != 60){
-		swal("", "Fecha de conclusión invalidada.", "warning");
-		temporalidad = 0;
-	}
+		if(temporalidad != 30 && temporalidad != 60){
+			swal("", "Fecha de conclusión invalidada.", "warning");
+			temporalidad = 0;
+		}
+		arrayCamposEnteros.push(temporalidad);
+		numerosValidos = arrayCamposEnteros.every(valor => valor !== 0);
+	}		
+	var camposValidos = arrayCamposData.every(valor => valor !== "");	
 
-	if (agentesMP_id != "" && idCargo != "" && idFuncion != "" && idAdscripcion != "" && nuc != "" && idDelito != "" && fechaAcuerdo != "" && fechaRegistro != "" && nombreVicti != "" && paternoVicti != "" && maternoVicti != "" && generoVicti != "" && edadVictima != "" && idFiscaliaProc != "" && totalInputs != 0 && fechaConclu != "" && temporalidad != 0 && nOficio != "") {
-
+	if (camposValidos && numerosValidos) {
+		console.log("Todos los campos son válidos.");
 		var dataGenerales = Array();
 		dataGenerales[1] = nuc.trim();
 		dataGenerales[2] = idDelito;
-		dataGenerales[3] = fechaAcuerdo;
-		dataGenerales[4] = fechaRegistro;
-		dataGenerales[5] = nombreVicti.trim();
-		dataGenerales[6] = paternoVicti.trim();
-		dataGenerales[7] = maternoVicti.trim();
-		dataGenerales[8] = generoVicti;
-		dataGenerales[9] = edadVictima;
 		dataGenerales[10] = idFiscaliaProc;
 
 		dataGenerales[11] = agentesMP_id;
@@ -3020,20 +3335,39 @@ function validateDataMedidaGeneralRegionales() {
 		dataGenerales[13] = idFuncion;
 		dataGenerales[14] = idAdscripcion;
 		dataGenerales[15] = idFiscAdscrito;
-		dataGenerales[16] = fechaConclu;
-		dataGenerales[17] = temporalidad;
 		dataGenerales[18] = idCoorporacion;
-		dataGenerales[19] = nOficio.trim();
+		dataGenerales[20] = medidaVictima;
 
-
-		//Obtenemos el nombre de los id de los input agregados dinamicamente
-		const getIdNameInput = [...document.querySelectorAll('.inputMedidaHidden')].map(el => el.id);
 		var dataMedidasAplicadasArray = {};
-		for (j in getIdNameInput){
-			dataMedidasAplicadasArray[j] = document.getElementById(getIdNameInput[j]).value;
+
+		if (!medidaVictima) {
+			dataGenerales[5] = nombreVicti.trim();
+			dataGenerales[6] = paternoVicti.trim();
+			dataGenerales[7] = maternoVicti.trim();
+			dataGenerales[8] = generoVicti;
+			dataGenerales[9] = edadVictima;
+			dataGenerales[3] = fechaAcuerdo;
+			dataGenerales[4] = fechaRegistro;
+			dataGenerales[16] = fechaConclu;
+			dataGenerales[17] = temporalidad;
+			dataGenerales[19] = nOficio.trim();
+			const getIdNameInput = [...document.querySelectorAll('.inputMedidaHidden')].map(el => el.id);
+			for (j in getIdNameInput){
+				dataMedidasAplicadasArray[j] = document.getElementById(getIdNameInput[j]).value;
+			}
 		}
-
-
+		else {
+			dataGenerales[5] = '';
+			dataGenerales[6] = '';
+			dataGenerales[7] = '';
+			dataGenerales[8] = 1;
+			dataGenerales[9] = 0;
+			dataGenerales[3] = '';
+			dataGenerales[4] = '';
+			dataGenerales[16] = '';
+			dataGenerales[17] = 0;
+			dataGenerales[19] = '';
+		}
 		var dataGeneralArray = {};
 		for (i in dataGenerales) {
 			dataGeneralArray[i] = dataGenerales[i];
@@ -3042,18 +3376,19 @@ function validateDataMedidaGeneralRegionales() {
 		dataGeneralArray = JSON.stringify(dataGeneralArray);
 		dataMedidasAplicadasArray = JSON.stringify(	dataMedidasAplicadasArray);
 		return ['true', dataGeneralArray, dataMedidasAplicadasArray];
-	} else {
-		return ['false', 0];
 	}
-
+	else {
+		console.log("Algunos campos no son válidos.");	
+		return ['false', 0]	;
+	}
 }
 
 function agregarMedida(etiqueta, idCatFraccion , img){
 	let medidas_seleccionadas = document.getElementById("medidas_seleccionadas"); //Obtiene div donde se insertaran los input ocultos
 	let medidaProteccion = '<input type="hidden" id="medidaSeleccionada'+idCatFraccion+'" class="inputMedidaHidden" name="medidaSeleccionada'+idCatFraccion+'" value="'+idCatFraccion+'">'; //creamos etiqueta
 	medidas_seleccionadas.innerHTML+=medidaProteccion; //Se insertan de manera secuencial los input agregados
-	etiqueta.removeAttribute('onmouseout'); //Se remueve función onmouseout para evitar conflictos y mostrar bien la imagen de la medida seleccionada
-	etiqueta.removeAttribute('onclick'); //Se remueve onclick para evitar que se añada mas de un input del mismo valor
+	// etiqueta.removeAttribute('onmouseout'); //Se remueve función onmouseout para evitar conflictos y mostrar bien la imagen de la medida seleccionada
+	// etiqueta.removeAttribute('onclick'); //Se remueve onclick para evitar que se añada mas de un input del mismo valor
 	console.log(etiqueta);
 	hoverIMG(etiqueta, img);
 }
@@ -3113,20 +3448,16 @@ function validateDataMedidaGeneralRegionalesUpdate() {
 	var idFuncion = document.getElementById("idFuncion").value;
 	var idAdscripcion = document.getElementById("idAdscripcion").value;
 	var idFiscAdscrito = document.getElementById("idFiscAdscrito").value;//No ocupa validacion
-	var fechaConclu = document.getElementById("fechaConclu").value;
 	var idCoorporacion = document.getElementById("idCoorporacion").value;
-	var nOficio = document.getElementById("nOficio").value;
 
 	var nuc = document.getElementById("nuc").value;
 	var idDelito = document.getElementById("idDelito").value;
-	var fechaAcuerdo = document.getElementById("fechaAcuerdo").value;
-	var fechaRegistro = document.getElementById("fechaRegistro").value;
 	var idFiscaliaProc = document.getElementById("idFiscaliaProc").value;
 
 	//Arreglo de campos para validar con color rojo, si se agrega un nuevo campo, agregar en el arreglo para incluir en la validacion de color
-	var arrayCamposValida = ["nuc", "idDelito_div", "fechaAcuerdo", "fechaRegistro", "idFiscaliaProc_div", "agentesMP_id", "idCargo", "idFuncion", "idAdscripcion" , "fechaConclu", "idCoorporacion", "nOficio"];
+	var arrayCamposValida = ["nuc", "idDelito_div", "idFiscaliaProc_div", "agentesMP_id", "idCargo", "idFuncion", "idAdscripcion" , "idCoorporacion"];
 	//Arreglo de variables de informacion, donde se verifica si hay informacion en dicha variable
-	var arrayCamposData = [nuc, idDelito, fechaAcuerdo, fechaRegistro, idFiscaliaProc, agentesMP_id, idCargo, idFuncion, idAdscripcion, fechaConclu, idCoorporacion, nOficio];
+	var arrayCamposData = [nuc, idDelito, idFiscaliaProc, agentesMP_id, idCargo, idFuncion, idAdscripcion, idCoorporacion];
 	//Bucle del tamaño de los campos, se verifica si la variable tiene información, si esta no tiene coloreamos el input de color rojo
 	for (x = 0; x < arrayCamposValida.length; x++) {
 		if ($.trim(arrayCamposData[x]) == "") {
@@ -3135,17 +3466,11 @@ function validateDataMedidaGeneralRegionalesUpdate() {
 		}
 	}
 
-	//Obtenemos la temporalidad de la medida aplicada en base a la fecha del acuerdo y fecha de conclusión.
-	let temporalidad = calculo_temporalidad(fechaConclu, fechaAcuerdo);
-	console.log("La temporalidad de la medida es de: " + temporalidad + " días");
-
-	if (agentesMP_id != "" && idCargo != "" && idFuncion != "" && idAdscripcion != "" && nuc != "" && idDelito != "" && fechaAcuerdo != "" && fechaRegistro != "" && idFiscaliaProc != "" && fechaConclu != "" && nOficio != "") {
+	if (agentesMP_id != "" && idCargo != "" && idFuncion != "" && idAdscripcion != "" && nuc != "" && idDelito != "" && idFiscaliaProc != "") {
 
 		var dataGenerales = Array();
 		dataGenerales[1] = nuc.trim();
 		dataGenerales[2] = idDelito;
-		dataGenerales[3] = fechaAcuerdo;
-		dataGenerales[4] = fechaRegistro;
 		dataGenerales[5] = idFiscaliaProc;
 
 		dataGenerales[6] = agentesMP_id;
@@ -3153,13 +3478,7 @@ function validateDataMedidaGeneralRegionalesUpdate() {
 		dataGenerales[8] = idFuncion;
 		dataGenerales[9] = idAdscripcion;
 		dataGenerales[10] = idFiscAdscrito;
-		dataGenerales[11] = fechaConclu;
-		dataGenerales[12] = temporalidad;
 		dataGenerales[13] = idCoorporacion;
-		dataGenerales[14] = nOficio.trim();
-
-
-
 		var dataGeneralArray = {};
 		for (i in dataGenerales) {
 			dataGeneralArray[i] = dataGenerales[i];

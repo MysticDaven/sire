@@ -5,7 +5,7 @@ include("../../../Conexiones/conexionMedidas.php");
 //////////// ID DE LA MEDIDA DE PROTECCION/////
 if (isset($_POST["idMedida"])){ $idMedida = $_POST["idMedida"]; }
 
-if (isset($_POST["idVictima"])){ $idVictima = $_POST["idVictima"]; }
+$idInvolucrado = isset($_POST['idInvolucrado'])	 ? $_POST['idInvolucrado'] : null;
 
 //VARIABLES DEL FORMULARIO OBTENIDO
 if (isset($_POST['nombreVictiEdita'])){ $nombreVictiEdita = $_POST['nombreVictiEdita']; }
@@ -30,21 +30,22 @@ if (isset($_POST['correoElectronico'])){ $correoElectronico = $_POST['correoElec
     BEGIN TRANSACTION
      SET NOCOUNT ON
       
-       UPDATE medidas.victimas SET nombre = '$nombreVictiEdita', 
-                                  paterno = '$paternoVictiEdita',
-                                  materno = '$maternoVictiEdita',
-                                  genero = $generoVictiEdita,
-                                  edad = $edadVictimaEdita, 
-                                  idEntidad = $entidad, 
-                                  idMunicipio = $municipio,
-                                  colonia = '$colonia',
-                                  calle = '$calle',
-                                  numero = '$numero',
-                                  telefono1 = '$telefonoUno',
-                                  telefono2 = '$telefonoDos',
-                                  codigoPostal = $codigoPostal,
-                                  correo = '$correoElectronico'
-                                  WHERE idVictima = $idVictima
+       UPDATE medidas.involucrado SET 
+        nombre = '$nombreVictiEdita', 
+        paterno = '$paternoVictiEdita',
+        materno = '$maternoVictiEdita',
+        genero = $generoVictiEdita,
+        edad = $edadVictimaEdita, 
+        idEntidad = $entidad, 
+        idMunicipio = $municipio,
+        colonia = '$colonia',
+        calle = '$calle',
+        numero = '$numero',
+        telefono1 = '$telefonoUno',
+        telefono2 = '$telefonoDos',
+        codigoPostal = $codigoPostal,
+        correo = '$correoElectronico'
+        WHERE idInvolucrado = $idInvolucrado
 
        COMMIT
       END TRY

@@ -42,44 +42,89 @@ if($rolUser == 1){
             END AS nOficio,
             d.Nombre AS delito,
             cu.nombre AS unidad,
+			(
+				SELECT
+					p.nombre + ' ' + p.paterno + ' ' + p.materno +
+						CASE WHEN p.esVictima = 0 THEN ' (Testigo)' ELSE '' END AS nombreVictima,
+        
+					CASE 
+						WHEN p.genero = 1 THEN 'Masculino'
+						WHEN p.genero = 2 THEN 'Femenino'
+						ELSE 'Desconocido'
+					END AS genero,
+
+					p.edad,
+					'Mexicana' AS nacionalidad,
+
+					ISNULL(ce.Nombre, 'Desconocido') AS estado,
+					ISNULL(cm.Nombre, 'Desconocido') AS municipio
+
+				FROM (
+					SELECT
+						CASE WHEN v.idVictima IS NOT NULL THEN 1 ELSE 0 END AS esVictima,
+						ISNULL(v.nombre, t.nombre) AS nombre,
+						ISNULL(v.paterno, t.paterno) AS paterno,
+						ISNULL(v.materno, t.materno) AS materno,
+						ISNULL(v.genero, t.genero) AS genero,
+						ISNULL(v.edad, t.edad) AS edad,
+						ISNULL(v.idEntidad, t.idEntidad) AS idEntidad,
+						ISNULL(v.idMunicipio, t.idMunicipio) AS idMunicipio
+					FROM SIRE.medidas.medidasProteccion m2
+					LEFT JOIN SIRE.medidas.victimas v ON v.idMedida = m2.idMedida
+					LEFT JOIN SIRE.medidas.testigo t ON t.idMedida = m2.idMedida
+					WHERE m2.idMedida = m.idMedida
+				) p
+				LEFT JOIN PRUEBA.dbo.CatEntidades ce ON ce.EntidadID = p.idEntidad
+				LEFT JOIN PRUEBA.dbo.CatMunicipiosPais cm ON cm.MunicipioID = p.idMunicipio
+				FOR JSON PATH
+			) AS victimas,
+			(
+				SELECT 
+					CASE 
+						WHEN EXISTS (
+							SELECT 1 
+							FROM SIRE.medidas.medidasAplicadas ma 
+							WHERE ma.idMedida = m.idMedida
+						)
+						THEN (
+							SELECT COUNT(*) 
+							FROM SIRE.medidas.medidasAplicadas ma 
+							WHERE ma.idMedida = m.idMedida
+						)
+						ELSE (
+							SELECT COUNT(*) 
+							FROM SIRE.medidas.medidasAplicadasTestigo mat 
+							WHERE mat.idMedida = m.idMedida
+						)
+					END
+			) AS numeroMedidasAplicadas,
             (
-                SELECT 
-                    v.nombre + ' ' + v.paterno + ' ' + v.materno AS nombreVictima,
-                    CASE
-                        WHEN v.genero = 1 THEN 'Masculino'
-                        WHEN v.genero = 2 THEN 'Femenino'
-                        ELSE 'Desconocido'
-                    END AS genero,
-                    v.edad,
-                    'Mexicana' AS nacionalidad,
-                    CASE
-                        WHEN ce.Nombre IS NULL THEN 'Desconocido'
-                        ELSE ce.Nombre
-                    END AS estado,	
-                    CASE
-                        WHEN cm.Nombre IS NULL THEN 'Desconocido'
-                        ELSE cm.Nombre
-                    END AS municipio			
-                FROM SIRE.medidas.medidasProteccion m2
-                LEFT JOIN SIRE.medidas.victimas v ON v.idMedida = m2.idMedida
-                LEFT JOIN PRUEBA.dbo.CatEntidades ce ON ce.EntidadID = v.idEntidad
-                LEFT JOIN PRUEBA.dbo.CatMunicipiosPais cm ON cm.MunicipioID = v.idMunicipio
-                WHERE m2.idMedida = m.idMedida
-                FOR JSON PATH
-            ) AS victimas,
-            (
-                SELECT COUNT(*)
-                FROM SIRE.medidas.medidasAplicadas ma
-                WHERE ma.idMedida = m.idMedida
-            ) AS numeroMedidasAplicadas,
-            (
-                SELECT 
-                    cf.nombre,
-                    cf.idCatFraccion AS fraccion			
-                FROM SIRE.medidas.medidasAplicadas m2
-                INNER JOIN SIRE.medidas.catFracciones cf ON m2.idCatFraccion = cf.idCatFraccion
-                WHERE m2.idMedida = m.idMedida
-                FOR JSON PATH
+            SELECT
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 
+						FROM SIRE.medidas.medidasAplicadas ma
+                        WHERE ma.idMedida = m.idMedida
+                    )
+                    THEN (
+                        SELECT
+                            cf.nombre,
+                            cf.idCatFraccion AS fraccion
+                        FROM SIRE.medidas.medidasAplicadas m2
+                        INNER JOIN SIRE.medidas.catFracciones cf ON m2.idCatFraccion = cf.idCatFraccion
+                        WHERE m2.idMedida = m.idMedida
+                        FOR JSON PATH
+                    )
+                    ELSE (
+                        SELECT
+                            cf.nombre,
+                            cf.idCatFraccion AS fraccion
+                        FROM SIRE.medidas.medidasAplicadasTestigo m2
+                        INNER JOIN SIRE.medidas.catFracciones cf ON m2.idCatFraccion = cf.idCatFraccion
+                        WHERE m2.idMedida = m.idMedida
+                        FOR JSON PATH
+                    )
+                    END
             ) AS medidasAplicadas,
             ca.temporalidad,
             m.fechaRegistro,
@@ -128,44 +173,89 @@ elseif($rolUser == 4){
             END AS nOficio,
             d.Nombre AS delito,
             cu.nombre AS unidad,
+			(
+				SELECT
+					p.nombre + ' ' + p.paterno + ' ' + p.materno +
+						CASE WHEN p.esVictima = 0 THEN ' (Testigo)' ELSE '' END AS nombreVictima,
+        
+					CASE 
+						WHEN p.genero = 1 THEN 'Masculino'
+						WHEN p.genero = 2 THEN 'Femenino'
+						ELSE 'Desconocido'
+					END AS genero,
+
+					p.edad,
+					'Mexicana' AS nacionalidad,
+
+					ISNULL(ce.Nombre, 'Desconocido') AS estado,
+					ISNULL(cm.Nombre, 'Desconocido') AS municipio
+
+				FROM (
+					SELECT
+						CASE WHEN v.idVictima IS NOT NULL THEN 1 ELSE 0 END AS esVictima,
+						ISNULL(v.nombre, t.nombre) AS nombre,
+						ISNULL(v.paterno, t.paterno) AS paterno,
+						ISNULL(v.materno, t.materno) AS materno,
+						ISNULL(v.genero, t.genero) AS genero,
+						ISNULL(v.edad, t.edad) AS edad,
+						ISNULL(v.idEntidad, t.idEntidad) AS idEntidad,
+						ISNULL(v.idMunicipio, t.idMunicipio) AS idMunicipio
+					FROM SIRE.medidas.medidasProteccion m2
+					LEFT JOIN SIRE.medidas.victimas v ON v.idMedida = m2.idMedida
+					LEFT JOIN SIRE.medidas.testigo t ON t.idMedida = m2.idMedida
+					WHERE m2.idMedida = m.idMedida
+				) p
+				LEFT JOIN PRUEBA.dbo.CatEntidades ce ON ce.EntidadID = p.idEntidad
+				LEFT JOIN PRUEBA.dbo.CatMunicipiosPais cm ON cm.MunicipioID = p.idMunicipio
+				FOR JSON PATH
+			) AS victimas,
+			(
+				SELECT 
+					CASE 
+						WHEN EXISTS (
+							SELECT 1 
+							FROM SIRE.medidas.medidasAplicadas ma 
+							WHERE ma.idMedida = m.idMedida
+						)
+						THEN (
+							SELECT COUNT(*) 
+							FROM SIRE.medidas.medidasAplicadas ma 
+							WHERE ma.idMedida = m.idMedida
+						)
+						ELSE (
+							SELECT COUNT(*) 
+							FROM SIRE.medidas.medidasAplicadasTestigo mat 
+							WHERE mat.idMedida = m.idMedida
+						)
+					END
+			) AS numeroMedidasAplicadas,
             (
-                SELECT 
-                    v.nombre + ' ' + v.paterno + ' ' + v.materno AS nombreVictima,
-                    CASE
-                        WHEN v.genero = 1 THEN 'Masculino'
-                        WHEN v.genero = 2 THEN 'Femenino'
-                        ELSE 'Desconocido'
-                    END AS genero,
-                    v.edad,
-                    'Mexicana' AS nacionalidad,
-                    CASE
-                        WHEN ce.Nombre IS NULL THEN 'Desconocido'
-                        ELSE ce.Nombre
-                    END AS estado,	
-                    CASE
-                        WHEN cm.Nombre IS NULL THEN 'Desconocido'
-                        ELSE cm.Nombre
-                    END AS municipio			
-                FROM SIRE.medidas.medidasProteccion m2
-                LEFT JOIN SIRE.medidas.victimas v ON v.idMedida = m2.idMedida
-                LEFT JOIN PRUEBA.dbo.CatEntidades ce ON ce.EntidadID = v.idEntidad
-                LEFT JOIN PRUEBA.dbo.CatMunicipiosPais cm ON cm.MunicipioID = v.idMunicipio
-                WHERE m2.idMedida = m.idMedida
-                FOR JSON PATH
-            ) AS victimas,
-            (
-                SELECT COUNT(*)
-                FROM SIRE.medidas.medidasAplicadas ma
-                WHERE ma.idMedida = m.idMedida
-            ) AS numeroMedidasAplicadas,
-            (
-                SELECT 
-                    cf.nombre,
-                    cf.idCatFraccion AS fraccion			
-                FROM SIRE.medidas.medidasAplicadas m2
-                INNER JOIN SIRE.medidas.catFracciones cf ON m2.idCatFraccion = cf.idCatFraccion
-                WHERE m2.idMedida = m.idMedida
-                FOR JSON PATH
+            SELECT
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 
+						FROM SIRE.medidas.medidasAplicadas ma
+                        WHERE ma.idMedida = m.idMedida
+                    )
+                    THEN (
+                        SELECT
+                            cf.nombre,
+                            cf.idCatFraccion AS fraccion
+                        FROM SIRE.medidas.medidasAplicadas m2
+                        INNER JOIN SIRE.medidas.catFracciones cf ON m2.idCatFraccion = cf.idCatFraccion
+                        WHERE m2.idMedida = m.idMedida
+                        FOR JSON PATH
+                    )
+                    ELSE (
+                        SELECT
+                            cf.nombre,
+                            cf.idCatFraccion AS fraccion
+                        FROM SIRE.medidas.medidasAplicadasTestigo m2
+                        INNER JOIN SIRE.medidas.catFracciones cf ON m2.idCatFraccion = cf.idCatFraccion
+                        WHERE m2.idMedida = m.idMedida
+                        FOR JSON PATH
+                    )
+                    END
             ) AS medidasAplicadas,
             ca.temporalidad,
             m.fechaRegistro,
@@ -222,12 +312,6 @@ $keysFechas = ['fechaRegistro', 'inicio', 'fin', 'ampliacion', 'temporalidadActu
 foreach ($arreglo as $registro) {
     $col = 'A';
     foreach ($keys as $key) {
-        // if ($key == 'nOficio' && $registro[$key] == 0) {
-        //     $sheet->setCellValue($col.(string)($contC), 'Desconocido');
-        // }
-        // else {
-        //     $sheet->setCellValue($col.(string)($contC), $registro[$key]);
-        // }
         $sheet->setCellValue($col.(string)($contC), $registro[$key]);
         $col++;
     }

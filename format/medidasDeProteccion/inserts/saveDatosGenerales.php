@@ -27,39 +27,47 @@ if (isset($_POST['rolUser'])) {
 //SE RECIBE OBJETO ARRAY CON LOS DATOS PRINCIPALES
 if (isset($_POST["dataPrincipalArray"]) && $idMedida == 0) {
   $data = json_decode($_POST['dataPrincipalArray'], true);
-  $fechaAcuerdo = $data[3];
-  $fechaAcuerdo = str_ireplace("'", '', $fechaAcuerdo);
+    if ($data[20]) {
+      $medidaVictima = 1;
+      $fechaAcuerdo = 'NULL';
+      $fechaConclusion = 'NULL';
+    }
+    else {
+      $medidaVictima = 0;      
+      $fechaAcuerdo = $data[3];
+      $fechaAcuerdo = str_ireplace("'", '', $fechaAcuerdo);
 
 
-  $fechaAcuerdo = str_ireplace('T', ' ', $fechaAcuerdo);
-  $fechaAcuerdo2 = ":00";
-  $fechaAcuerdo = $fechaAcuerdo . $fechaAcuerdo2;
+      $fechaAcuerdo = str_ireplace('T', ' ', $fechaAcuerdo);
+      $fechaAcuerdo2 = ":00";
+      $fechaAcuerdo = $fechaAcuerdo . $fechaAcuerdo2;
 
-  $array_fecha =  explode(' ', $fechaAcuerdo, 2);
-  $fechaConvertida = $array_fecha[0] . '' . $array_fecha[1] . '';
+      $array_fecha =  explode(' ', $fechaAcuerdo, 2);
+      $fechaConvertida = $array_fecha[0] . '' . $array_fecha[1] . '';
 
-  $fechaAcuerdo = convierteFecha($array_fecha[0]);
-  $fechaAcuerdo .= ' ' . $array_fecha[1];
+      $fechaAcuerdo = convierteFecha($array_fecha[0]);
+      $fechaAcuerdo .= ' ' . $array_fecha[1];
 
-  $fechaAcuerdo = "'" . $fechaAcuerdo . "'";
+      $fechaAcuerdo = "'" . $fechaAcuerdo . "'";
 
-  if ($rolUser == 4) {
-    $fechaConclusion = $data[16];
-    $fechaConclusion = str_ireplace("'", '', $fechaConclusion);
+      if ($rolUser == 4) {
+        $fechaConclusion = $data[16];
+        $fechaConclusion = str_ireplace("'", '', $fechaConclusion);
 
 
-    $fechaConclusion = str_ireplace('T', ' ', $fechaConclusion);
-    $fechaConclusion2 = ":00";
-    $fechaConclusion = $fechaConclusion . $fechaConclusion2;
+        $fechaConclusion = str_ireplace('T', ' ', $fechaConclusion);
+        $fechaConclusion2 = ":00";
+        $fechaConclusion = $fechaConclusion . $fechaConclusion2;
 
-    $array_fecha1 =  explode(' ', $fechaConclusion, 2);
-    $fechaConvertida = $array_fecha1[0] . '' . $array_fecha1[1] . '';
+        $array_fecha1 =  explode(' ', $fechaConclusion, 2);
+        $fechaConvertida = $array_fecha1[0] . '' . $array_fecha1[1] . '';
 
-    $fechaConclusion = convierteFecha($array_fecha1[0]);
-    $fechaConclusion .= ' ' . $array_fecha1[1];
+        $fechaConclusion = convierteFecha($array_fecha1[0]);
+        $fechaConclusion .= ' ' . $array_fecha1[1];
 
-    $fechaConclusion = "'" . $fechaConclusion . "'";
-  }
+        $fechaConclusion = "'" . $fechaConclusion . "'";
+      }      
+    }
 }
 
 function convierteFecha($fecha)
@@ -124,24 +132,31 @@ if ($idMedida == 0 && $rolUser != 4) {
   if (sqlsrv_begin_transaction($connMedidas) === false) {
     die(print_r(sqlsrv_errors(), true));
   }
-
   $queryTransaction1 = "BEGIN
                         BEGIN TRY 
                          BEGIN TRANSACTION
                           SET NOCOUNT ON
-                            declare @insertado int
+                            declare @idMedida int
+                            declare @idInvolucrado int
+                            declare @medidaVictima int = $medidaVictima
                           
-                            INSERT INTO medidas.medidasProteccion VALUES($data[1],$data[11],$data[14],$data[15],$data[2], $fechaAcuerdo,GETDATE(), DATEPART(dw, $fechaAcuerdo), DATEPART(day, $fechaAcuerdo), DATEPART(month, $fechaAcuerdo), DATEPART(year, $fechaAcuerdo), $idEnlace, $data[10], 1, $fechaConclusion, $data[18], '$data[19]')
+                            INSERT INTO medidas.medidasProteccion (nuc, idMp, idUnidad, idFiscalia, idDelito, idEnlace, idFiscaliaProcedencia, estatus, idCatCoorporacion)
+                            VALUES ($data[1],$data[11],$data[14],$data[15],$data[2], $idEnlace, $data[10], 1, $data[18])
 
-                            select @insertado = @@IDENTITY
+                            select @idMedida = SCOPE_IDENTITY()
 
-                            INSERT INTO medidas.victimas(idMedida , nombre, paterno, materno, genero, edad) 
-                            VALUES(@insertado, '$data[5]', '$data[6]', '$data[7]', $data[8],  $data[9] )
+                            IF (@medidaVictima = 0)
+                            BEGIN
+                              INSERT INTO medidas.involucrado(idMedida, idTipoInvolucrado, nombre, paterno, materno, genero, edad) 
+                              VALUES(@idMedida, 1, '$data[5]', '$data[6]', '$data[7]', $data[8],  $data[9] )
 
-                            INSERT INTO medidas.cuadernoAntecedentes (idMedida, temporalidad , fechaConclusion) VALUES (@insertado , $data[17] , $fechaConclusion)
+                              set @idInvolucrado = SCOPE_IDENTITY()
 
-                            SELECT MAX(idMedida) AS id FROM medidas.medidasProteccion                      
+                              INSERT INTO medidas.registro (idInvolucrado, fechaRegistro, fechaAcuerdo, fechaConclusion, temporalidad, nOficio)
+                              VALUES(@idInvolucrado, GETDATE(), $fechaAcuerdo, $fechaConclusion,$data[17], '$data[19]')
+                            END                                                        
 
+                            SELECT @idInvolucrado AS idInvolucrado, @idMedida AS idMedida
                             COMMIT
                            END TRY
                           BEGIN CATCH
@@ -155,32 +170,60 @@ if ($idMedida == 0 && $rolUser != 4) {
   if ($result1) {
     //OBTENEMOS EL ID DE LA MEDIDA REGISTRADA Y EL ID DE LA FISCALIA DEL MP
     while ($row = sqlsrv_fetch_array($result1, SQLSRV_FETCH_ASSOC)) {
-      $idMedida = $row['id'];
+      $idInvolucrado = $row['idInvolucrado'];
+      $idMedida = $row['idMedida'];
     }
     //CREAREMOS LAS SENTENCIAS PARA INSERTAR LAS MEDIDAS
     while ($aux < $tam) {
-      $consulta = $consulta . "INSERT INTO medidas.medidasAplicadas (idMedida, nuc, idCatFraccion) VALUES ($idMedida, $data[1], $dataMedidasAplicadas[$aux]) ";
+      $consulta = $consulta . "INSERT INTO medidas.involucrado_medidasAplicadas (idInvolucrado, idCatFraccion) VALUES ($idInvolucrado, $dataMedidasAplicadas[$aux]) ";
       $aux++;
     }
   }
 
-  $queryTransaction2 = $consulta;
-  $result2 = sqlsrv_query($connMedidas, $queryTransaction2, array(), array("Scrollable" => 'static'));
+  if (!$data[20]) {
+      $queryTransaction2 = $consulta;
+      $result2 = sqlsrv_query($connMedidas, $queryTransaction2, array(), array("Scrollable" => 'static'));
+  }
+  else {
+    $result2 = true;
+  }
 
   $arreglo[0] = "NO";
   $arreglo[1] = "SI";
 
   /* Si ambas sentencias finalizaran con éxito, consolidar la transacción. */
   /* En caso contrario, revertirla. */
-  if ($result1 && $result2) {
+if ($result1 && $result2) {
     sqlsrv_commit($connMedidas);
-    //echo "Transaccion consolidada.<br />";
     $arreglo[2] = $idMedida;
-    $d = array('first' => $arreglo[1], 'idMedidaUltimo' => $arreglo[2]);
+
+    $d = array(
+        'first' => $arreglo[1],
+        'idMedidaUltimo' => $idMedida,
+        'query' => $queryTransaction1
+    );
+
     echo json_encode($d);
-  } else {
+} else {
     sqlsrv_rollback($connMedidas);
-    //echo "Transaccion revertida.<br />";
-    echo json_encode(array('first' => $arreglo[0]));
-  }
+
+    // Capturar errores
+    $errors = sqlsrv_errors(SQLSRV_ERR_ERRORS);
+    $errorMessages = [];
+
+    if ($errors != null) {
+        foreach ($errors as $error) {
+            $errorMessages[] = "SQLSTATE: ".$error['SQLSTATE']." - Code: ".$error['code']." - Message: ".$error['message'];
+        }
+    }
+
+    $d = array(
+        'first' => $arreglo[0],
+        'errors' => $errorMessages,
+        'query' => $queryTransaction1
+    );
+
+    echo json_encode($d);
+}
+
 }

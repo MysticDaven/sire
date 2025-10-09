@@ -3104,6 +3104,7 @@ function validateNuc(object){
 	}
 }
 
+
 function closeModalPueDispo(){
 	$('#puestdispos').modal('hide');
 }

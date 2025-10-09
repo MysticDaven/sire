@@ -898,7 +898,7 @@ if ($idEnlace == 14 || $idEnlace == 15 || $idEnlace == 23 || $idEnlace == 22 || 
 		<!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
 	<? } ?>
 
-	<? if ($format == 18 || $format == 19) { ?><script type="text/javascript" src="js/mandamientosJudiciales_20062022Late.js"></script><? } ?>
+	<? if ($format == 18 || $format == 19) { ?><script type="text/javascript" src="js/mandamientosJudiciales_09102025.js"></script><? } ?>
 	<script language="JavaScript" type="text/javascript" src="js/estadoDeFuerza.js"></script>
 	<script language="JavaScript" type="text/javascript" src="js/busquedas.js"></script>
 

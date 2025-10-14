@@ -558,7 +558,7 @@ function getDistincCarpetasAgenteLitigacion($conn, $idMp, $estatus, $mes, $anio,
 					WHERE idMp = $idMp AND mes = $mes AND anio = $anio AND  idEstatus = $estatus AND idUnidad = $idUnidad  ";
 		} 
 		else if ($estatus == 181 ) {
-			$query = " SELECT nuc, idEstatusNucs FROM estatusNucs WHERE idMp = $idMp AND idEstatus = $estatus  ";
+			$query = " SELECT nuc, idEstatusNucs FROM estatusNucs WHERE idMp = $idMp AND idEstatus = $estatus AND idUnidad = $idUnidad ";
 		}else {
 			$query = " SELECT DISTINCT nuc, idEstatusNucs FROM estatusNucs WHERE idMp = $idMp AND idEstatus = $estatus AND mes = $mes AND anio = $anio AND idUnidad = $idUnidad Group BY nuc , idEstatusNucs";
 		}

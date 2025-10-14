@@ -14,7 +14,7 @@ $sheet = $spreadsheet->getActiveSheet();
 if (isset($_GET["anioTrimes"])){ $getAnio = $_GET["anioTrimes"]; }
 if (isset($_GET["periodoTrimes"])){ $getPeriodo = $_GET["periodoTrimes"]; }
 
-/*******META DATOS*****/
+/*******META DATOS PRUEBA GIT*****/
 $sheet->setTitle("INDICADORES ESTRATEGICOS");
 
 /******IMAGEN ENCABEZADO******/

@@ -665,20 +665,87 @@ function guardarLitigacion(idEnlace, mes, anio, idMp, idUnidad) {
 }
 
 //////////// VALIDA EL NUC INGRESADO SI EXISTE EN SICAP PARA PODER SER INGRESADO A SISTEMA Y SI NO ES ASI HAY QUE INGRESARLO A SICAP PRIMERO /////////////////////
-
+let nucValidationTimer;
 function nucInserts(idinput, idMp, mes, anio, estatResolucion, deten, idUnidad) {
 
+    // 1. Limpiamos cualquier temporizador anterior cada vez que se presiona una tecla.
+    clearTimeout(nucValidationTimer);
 
+    const nuc = object.value;
+    const len = nuc.length;
+
+    // Cortamos el valor si excede el máximo de 15
+    if (len > 15) {
+        object.value = nuc.slice(0, 15);
+        return;
+    }
+
+    // 2. Lógica de validación condicional
+    if (len === 15) {
+        // Si la longitud es 15, validamos inmediatamente.
+        nuc = document.getElementById('nuc').value;
+
+        acc = "existeNuc";
+        ajax = objetoAjax();
+        ajax.open("POST", "format/litigacion/accionesNucsLit.php");
+
+        ajax.onreadystatechange = function () {
+            if (ajax.readyState == 4 && ajax.status == 200) {
+
+                var cadCodificadaJSON = ajax.responseText;
+                var objDatos = eval("(" + cadCodificadaJSON + ")");
+
+
+                if (objDatos.first == "NO") { getExpediente("expedCont", nuc); swal("", "El numero de caso no existe.", "warning"); } else {
+
+                    if (objDatos.first == "SI") {
+                        getDatosNucDetermEstlit(nuc, idMp, estatResolucion, mes, anio, deten, idUnidad);
+                    }
+                }
+            }
+        }
+        ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        ajax.send("&nuc=" + nuc + "&acc=" + acc);
+    } else if (len === 13) {
+        // Si la longitud es 13, esperamos 500ms antes de validar.
+        // Si el usuario escribe otro carácter, este temporizador se cancelará.
+        nucValidationTimer = setTimeout(() => {
+            nuc = document.getElementById('nuc').value;
+
+            acc = "existeNuc";
+            ajax = objetoAjax();
+            ajax.open("POST", "format/litigacion/accionesNucsLit.php");
+
+            ajax.onreadystatechange = function () {
+                if (ajax.readyState == 4 && ajax.status == 200) {
+
+                    var cadCodificadaJSON = ajax.responseText;
+                    var objDatos = eval("(" + cadCodificadaJSON + ")");
+
+
+                    if (objDatos.first == "NO") { getExpediente("expedCont", nuc); swal("", "El numero de caso no existe.", "warning"); } else {
+
+                        if (objDatos.first == "SI") {
+                            getDatosNucDetermEstlit(nuc, idMp, estatResolucion, mes, anio, deten, idUnidad);
+                        }
+                    }
+                }
+            }
+            ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            ajax.send("&nuc=" + nuc + "&acc=" + acc);
+        }, 2500); // 500 milisegundos = medio segundo
+    }
+/*
 	texto = document.getElementById(idinput).value;
 	cantidadinicio = document.getElementById(idinput).value.length;
 
-	if (cantidadinicio > 13) {
+	if (cantidadinicio > 18) {
 		var slice2 = texto.slice(0, -1);
 		document.getElementById(idinput).value = slice2;
 	} else {
 
 		if (cantidadinicio < 13) { } else {
-			if (cantidadinicio == 13) {
+			if (cantidadinicio == 13 || cantidadinicio == 15) {
 
 				nuc = document.getElementById('nuc').value;
 
@@ -693,7 +760,7 @@ function nucInserts(idinput, idMp, mes, anio, estatResolucion, deten, idUnidad) 
 						var objDatos = eval("(" + cadCodificadaJSON + ")");
 
 
-						if (objDatos.first == "NO") { getExpediente("expedCont", nuc); swal("", "El numero de caso no existe 2.", "warning"); } else {
+						if (objDatos.first == "NO") { getExpediente("expedCont", nuc); swal("", "El numero de caso no existe.", "warning"); } else {
 
 							if (objDatos.first == "SI") {
 								getDatosNucDetermEstlit(nuc, idMp, estatResolucion, mes, anio, deten, idUnidad);
@@ -707,6 +774,7 @@ function nucInserts(idinput, idMp, mes, anio, estatResolucion, deten, idUnidad) 
 			}
 		}
 	}
+	*/
 }
 
 ////////////////////////////////

@@ -79,7 +79,7 @@ $idUsuario = $_SESSION['useridIE'];
         <div class="row">
             <div class="col-xs-6">
                 <label style="font-weight:bold">Número de Caso *</label>
-                <input id="nuc" type="number" name="nuc" value="" tabindex="0" onkeyup="<? if ($sicaBand == 1) { ?>  nucFunctionsLit('nuc', <? echo $idMp; ?>, <? echo $mes; ?>, <? echo $anio; ?>, <? echo $estatus; ?>, 0, <? echo $idUnidad; ?>); <?  } else {  ?>  nucInserts('nuc', <? echo $idMp; ?>, <? echo $mes; ?>, <? echo $anio; ?>, <? echo $estatus; ?>, 0, <? echo $idUnidad; ?>); <? } ?>" placeholder="Ingresa Número de Caso" style="height:38px; font-weight: bold;" class="fechas form-control redondear" autofocus />
+                <input id="nuc" type="text" name="nuc" value="" maxlength="15" oninput="this.value = this.value.toUpperCase()" tabindex="0" onkeyup="<? if ($sicaBand == 1) { ?>  nucFunctionsLit('nuc', <? echo $idMp; ?>, <? echo $mes; ?>, <? echo $anio; ?>, <? echo $estatus; ?>, 0, <? echo $idUnidad; ?>); <?  } else {  ?>  nucInserts('nuc', <? echo $idMp; ?>, <? echo $mes; ?>, <? echo $anio; ?>, <? echo $estatus; ?>, 0, <? echo $idUnidad; ?>); <? } ?>" placeholder="Ingresa Número de Caso" style="height:38px; font-weight: bold;" class="fechas form-control redondear" autofocus />
             </div>
             <div class="col-xs-6">
                 <label style="font-weight:bold">Expediente *</label>

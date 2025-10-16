@@ -426,7 +426,7 @@ $get_tipo_user = get_tipo_user($idEnlace);
 								<div class="col-xs-12 col-sm-12  col-md-3 input-group-lg" id="div_nuc" <? echo $hide_show_nuc; ?>>
 									<label for="nuc"><span class="glyphicon glyphicon-certificate"></span> NUC :</label><br>
 									<div class="preloaderSelect_NUC" hidden>Validando NUC, espere un momento...<img width="50px" src="img/loaderData.gif"></div>
-									<input type="number" id="nuc" class="form-control" placeholder="ESPECIFICA EL NUC*" aria-describedby="sizing-addon1" maxlength="13" oninput="validateNucs(this)" type="number" onchange="validateCampo_OK(this.id)" value="<? if ($a == 1) {
+									<input type="text" id="nuc" class="form-control" placeholder="ESPECIFICA EL NUC*" aria-describedby="sizing-addon1" maxlength="15" oninput="validateNucs(this)" type="number" onchange="validateCampo_OK(this.id)" value="<? if ($a == 1) {
 										echo $CARPETA_INV;
 									} ?>">
 								</div>

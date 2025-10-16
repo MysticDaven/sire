@@ -763,9 +763,9 @@ sqlsrv_close($conn);
 function getPrevYears($attr){
 
     $sql = "SELECT [idPregunta]
-                ,sum(val2017+ val2018+ val2019+ val2020+ val2021+ val2022+ val2023) as prev_years
+                ,sum(val2017+ val2018+ val2019+ val2020+ val2021+ val2022+ val2023 + val2024) as prev_years
             FROM [ESTADISTICAV2].[trimestral].[datosAnteriorTrimestral] where idEnlace = $attr->link and anio in ($attr->year) and periodo = $attr->period
-            group by [idPregunta] having sum(val2017+ val2018+ val2019+ val2020+ val2021+ val2022+ val2023) > 0";
+            group by [idPregunta] having sum(val2017+ val2018+ val2019+ val2020+ val2021+ val2022+ val2023 + val2024) > 0";
 
     $result = sqlsrv_query($attr->conn, $sql, $attr->params, $attr->options);
 

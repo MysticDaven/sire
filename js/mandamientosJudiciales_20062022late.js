@@ -198,47 +198,68 @@ function reload_juzgados(){
 			ajax.send("ID_ESTADO_JUZGADO="+ID_ESTADO_JUZGADO);
 		}
 	}
+let nucValidationTimer;
+function validateNucs(object){
 
-	function validateNucs(object){
-		var nuc = document.getElementById('nuc').value;
-		if (object.value.length > object.maxLength){
-			object.value = object.value.slice(0, object.maxLength)
-		}
-		if(object.value.length == 13){
-	 //Invocamos a la funcion que valida si existe el NUC en sigi realizando un callback a la funcion succes de ajax para retornar el valor
-	 validaNucSIGI_Mandamientos(nuc, function(resp, arrayData){
-	 	existeNuc = resp;
-	 	getArrayData = arrayData;
-	 	console.log("Respuesta funcion valida nuc: "+existeNuc);
-	 	console.log("Información obtenida: "+getArrayData);	
-				$('.preloaderSelect_NUC').hide(); //GIF carga de información
-				$('#nuc').show();
-				if(existeNuc == "NUC_OKSIGI"){
-					swal({
-						title: "Se ha validado correctamente el NUC: "+nuc,
-						html: true,
-						text: "<hr><span>Agente del Ministerio Público: <b>"+getArrayData[0][5]+"</b><br>Expediente: <b>"+getArrayData[0][1]+"</b><br>Apertura: <b>"+getArrayData[0][2]+"</b><br>Unidad de investigación: <b>"+getArrayData[0][3]+"</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",  
-						type: "success",
-						showCancelButton: false,
-						confirmButtonColor: 'rgba(21,47,74,.9)',
-						confirmButtonText: 'Confirmar',
-						cancelButtonText: "No, Cancelar"
+    // 1. Limpiamos cualquier temporizador anterior cada vez que se presiona una tecla.
+    clearTimeout(nucValidationTimer);
 
-					},
-					function(isConfirm){
-						if (isConfirm) {
-							//ACCION ALK CONFIRMAR 
-						}
-					});
-				}else if(existeNuc == "NUC_NOEXISTESIGI"){
-					swal("", "El NUC no se encuentra iniciado en SIGI, favor de verificar con la unidad correspondiente", "warning");
-					$('#nuc').val('');
-				}else if(existeNuc == "NUC_INVALIDO"){
-					swal("", "Longitud de NUC invalida, favor de verificar.", "warning");
-					$('#nuc').val('');
-				}
-		 }); //Termina función callback a funcion ajac verificadora del nuc
-	}
+    const nuc = object.value;
+    const len = nuc.length;
+
+    // Cortamos el valor si excede el máximo de 15
+    if (len > 15) {
+        object.value = nuc.slice(0, 15);
+        return;
+    }
+
+    // 2. Lógica de validación condicional
+    if (len === 15) {
+        // Si la longitud es 15, validamos inmediatamente.
+        runNucValidation(nuc);
+    } else if (len === 13) {
+        // Si la longitud es 13, esperamos 500ms antes de validar.
+        // Si el usuario escribe otro carácter, este temporizador se cancelará.
+        nucValidationTimer = setTimeout(() => {
+            runNucValidation(nuc);
+        }, 2500); // 500 milisegundos = medio segundo
+    }
+}
+
+function runNucValidation(nuc) {
+    //Invocamos a la funcion que valida si existe el NUC en sigi realizando un callback a la funcion succes de ajax para retornar el valor
+    validaNucSIGI_Mandamientos(nuc, function(resp, arrayData){
+        existeNuc = resp;
+        getArrayData = arrayData;
+        console.log("Respuesta funcion valida nuc: "+existeNuc);
+        console.log("Información obtenida: "+getArrayData);
+        $('.preloaderSelect_NUC').hide(); //GIF carga de información
+        $('#nuc').show();
+        if(existeNuc == "NUC_OKSIGI"){
+            swal({
+                    title: "Se ha validado correctamente el NUC: "+nuc,
+                    html: true,
+                   // text: "<hr><span>Agente del Ministerio Público: <b>"+getArrayData[0][5]+"</b><br>Expediente: <b>"+getArrayData[0][1]+"</b><br>Apertura: <b>"+getArrayData[0][2]+"</b><br>Unidad de investigación: <b>"+getArrayData[0][3]+"</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",
+                    type: "success",
+                    showCancelButton: false,
+                    confirmButtonColor: 'rgba(21,47,74,.9)',
+                    confirmButtonText: 'Confirmar',
+                    cancelButtonText: "No, Cancelar"
+
+                },
+                function(isConfirm){
+                    if (isConfirm) {
+                        //ACCION ALK CONFIRMAR
+                    }
+                });
+        }else if(existeNuc == "NUC_NOEXISTESIGI"){
+            swal("", "El NUC no se encuentra iniciado en SICAP, favor de verificar con la unidad correspondiente", "warning");
+            $('#nuc').val('');
+        }else if(existeNuc == "NUC_INVALIDO"){
+            swal("", "Longitud de NUC invalida, favor de verificar.", "warning");
+            $('#nuc').val('');
+        }
+    }); //Termina función callback a funcion ajac verificadora del nuc
 }
 
 function validaNucSIGI_Mandamientos(nuc, my_callback){
@@ -250,7 +271,7 @@ function validaNucSIGI_Mandamientos(nuc, my_callback){
 	resp[2] = "NUC_OKSIGI";
  $('.preloaderSelect_NUC').show(); //GIF carga de información
  $('#nuc').hide();
- if(nuc.length == 13){
+ if(nuc.length == 13 || nuc.length == 15){
  	$.ajax({
  		type: "POST",
  		dataType: 'html',
@@ -646,7 +667,7 @@ function guardar_mandamiento_inculpado(tipoModal, idEnlace, idUnidad, idfisca, I
 		  		swal({
 		  			title: "¿Guardar información de mandamiento del NUC: "+nuc+"?",
 		  			html: true,
-		  			text: "<hr><span>Agente del Ministerio Público: <b>"+getArrayData[0][5]+"</b><br>Expediente: <b>"+getArrayData[0][1]+"</b><br>Apertura: <b>"+getArrayData[0][2]+"</b><br>Unidad de investigación: <b>"+getArrayData[0][3]+"</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",  
+		  			//text: "<hr><span>Agente del Ministerio Público: <b>"+getArrayData[0][5]+"</b><br>Expediente: <b>"+getArrayData[0][1]+"</b><br>Apertura: <b>"+getArrayData[0][2]+"</b><br>Unidad de investigación: <b>"+getArrayData[0][3]+"</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",
 		  			type: "success",
 		  			showCancelButton: true,
 		  			confirmButtonColor: 'rgba(21,47,74,.9)',

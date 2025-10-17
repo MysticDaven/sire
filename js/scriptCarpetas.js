@@ -165,7 +165,7 @@ function sendModalCarpetasNucs(estatus, idMp, mes, anio, idUnidad, deten) {
 
 function validateCarpetJudicializade2(idMp, mes, anio, estatResolucion, idUnidad, deten) {
 
-
+   //judicializadas
 	acc = "validateJudicializte2";
 	cont = document.getElementById("contentMotivo");
 	ajax = objetoAjax();

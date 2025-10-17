@@ -1228,11 +1228,11 @@ function checkNucJudiciImputado(estatusResolucion, idMp, mes, anio, deten, idUni
 
 
 //////////// VALIDA EL NUC INGRESADO SI EXISTE EN SICAP PARA PODER SER INGRESADO A SISTEMA Y SI NO ES ASI HAY QUE INGRESARLO A SICAP PRIMERO /////////////////////
-let nucValidationTimer;
+let nucValidationTimer2;
 function nucInserts(idinput, idMp, mes, anio, estatResolucion, deten, idUnidad) {
 
     // 1. Limpiamos cualquier temporizador anterior cada vez que se presiona una tecla.
-    clearTimeout(nucValidationTimer);
+    clearTimeout(nucValidationTimer2);
 
     texto = document.getElementById(idinput).value;
     cantidadinicio = document.getElementById(idinput).value.length;
@@ -1286,7 +1286,7 @@ function nucInserts(idinput, idMp, mes, anio, estatResolucion, deten, idUnidad) 
     } else if (cantidadinicio === 13) {
         // Si la longitud es 13, esperamos 500ms antes de validar.
         // Si el usuario escribe otro carácter, este temporizador se cancelará.
-        nucValidationTimer = setTimeout(() => {
+        nucValidationTimer2 = setTimeout(() => {
 
             nuc = document.getElementById('nuc').value;
 

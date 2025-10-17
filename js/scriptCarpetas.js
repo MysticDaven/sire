@@ -255,7 +255,7 @@ function saveCarpetJudicidFirstTime(idMp, mes, anio, estatResolucion, idUnidad, 
 
 
 
-	if (cantidadinicio > 13) {
+	if (cantidadinicio > 15) {
 		var slice2 = texto.slice(0, -1);
 		document.getElementById("nuc").value = slice2;
 	} else {

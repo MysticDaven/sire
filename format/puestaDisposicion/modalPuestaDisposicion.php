@@ -115,7 +115,7 @@
  		<div class="row"><!-- ROOWWWWWW LOCALIDADES  --> 
  			<div class="col-xs-12 col-sm-12  col-md-3">
  				<label for="heard">Nuc :</label>
- 				<input class="form-control gehit"  id="nucPuestaDisposi" maxlength="15" oninput="this.value = this.value.toUpperCase();  validateNuc(this)"  type="text" value="<? if($a == 1){ echo $nuc; } ?>" <? if($b == 0){ echo "readonly"; } ?>>
+ 				<input class="form-control gehit"  id="nucPuestaDisposi" maxlength="15" oninput="validateNuc(this)"  type="text" value="<? if($a == 1){ echo $nuc; } ?>" <? if($b == 0){ echo "readonly"; } ?>>
  			</div>
  			<!--CONDICIONAL PARA HABILITAR A DETERMINADO ENLACE -->
  			<?if($idEnlace == 433 || $idEnlace == 124 || $idEnlace == 95 || $idEnlace == 108 || $idEnlace == 127 ){ ?>

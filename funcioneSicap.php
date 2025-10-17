@@ -175,7 +175,7 @@ and c.FechaInicio >= $fechaini2 AND   FechaInicio <= $fechafin2 ";
 
 function get_nuc_sicap ($nuc,$conn)	{			
 			
-			$consulta="select * from Carpeta where nuc=".$nuc;
+			$consulta="select * from Carpeta where nuc='$nuc'";
 			$stmt = sqlsrv_query( $conn, $consulta);
 			$row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC );
 			
@@ -189,7 +189,7 @@ function get_nuc_sicap ($nuc,$conn)	{
 	function get_datos_carpeta_capturado($conn,$nuc)
 		{
 			$indice=0;
-			$consulta="SELECT CarpetaID, NUC, Expediente, fechaCaptura, FechaInicio, FechaComision, Contar from Carpeta where NUC=".$nuc;
+			$consulta="SELECT CarpetaID, NUC, Expediente, fechaCaptura, FechaInicio, FechaComision, Contar from Carpeta where NUC= '$nuc' ";
 
 			$stmt = sqlsrv_query( $conn, $consulta);
 			while(	$row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC )){

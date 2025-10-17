@@ -260,9 +260,9 @@ function saveCarpetJudicidFirstTime(idMp, mes, anio, estatResolucion, idUnidad, 
 		document.getElementById("nuc").value = slice2;
 	} else {
 
-		if (cantidadinicio < 13) { } else {
+		if (cantidadinicio < 13 || cantidadinicio == 14 ) { swal("", "Longitud de nuc invalida.", "warning"); } else {
 
-			if (cantidadinicio == 13) {
+			if (cantidadinicio == 13 || cantidadinicio == 15) {
 
 
 				nuc = document.getElementById('nuc').value;

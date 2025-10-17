@@ -91,7 +91,7 @@ $hoy = date("Y-m-d");//Fecha calendario
 							<div class="col-xs-4">
 
 								<label style="font-weight:bold">Número de Caso *</label>
-								<input id="nuc" type="text" name="nuc" maxlength="15" oninput="this.value = this.value.toUpperCase();" value="" tabindex="0" placeholder="Ingresa Número de Caso" style="height:38px; font-weight: bold;" class="fechas form-control redondear" autofocus />
+								<input id="nuc" type="number" name="nuc" value="" tabindex="0" placeholder="Ingresa Número de Caso" style="height:38px; font-weight: bold;" class="fechas form-control redondear" autofocus />
 							</div>
 
 							<?php if ($estatus != 22) {   ?>

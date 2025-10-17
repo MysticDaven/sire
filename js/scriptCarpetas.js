@@ -419,14 +419,14 @@ function saveCarpet(idMp, mes, anio, estatResolucion, idUnidad, deten) {
 	////// VALIDAR SI ES UN NO EJERCICIO Y ADEMAS NO HAYA SELECIONADO LA CAUSA ///////////
 
 
-	if (cantidadinicio > 15) {
+	if (cantidadinicio > 13) {
 		var slice2 = texto.slice(0, -1);
 		document.getElementById("nuc").value = slice2;
 	} else {
 
-		if (cantidadinicio < 13 || cantidadinicio == 14 ) { swal("", "Longitud de nuc invalida.", "warning"); } else {
+		if (cantidadinicio < 13) { } else {
 
-			if (cantidadinicio == 13 || cantidadinicio == 15) {
+			if (cantidadinicio == 13) {
 
 
 				if (estatResolucion == 22 && envioselect == 0) { swal("", "Debe seleccionar un motivo.", "warning"); } else {

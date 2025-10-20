@@ -165,7 +165,7 @@ function sendModalCarpetasNucs(estatus, idMp, mes, anio, idUnidad, deten) {
 
 function validateCarpetJudicializade2(idMp, mes, anio, estatResolucion, idUnidad, deten) {
 
-
+   //judicializadas
 	acc = "validateJudicializte2";
 	cont = document.getElementById("contentMotivo");
 	ajax = objetoAjax();
@@ -255,14 +255,14 @@ function saveCarpetJudicidFirstTime(idMp, mes, anio, estatResolucion, idUnidad, 
 
 
 
-	if (cantidadinicio > 13) {
+	if (cantidadinicio > 15) {
 		var slice2 = texto.slice(0, -1);
 		document.getElementById("nuc").value = slice2;
 	} else {
 
-		if (cantidadinicio < 13) { } else {
+		if (cantidadinicio < 13 || cantidadinicio == 14 ) { swal("", "Longitud de nuc invalida.", "warning"); } else {
 
-			if (cantidadinicio == 13) {
+			if (cantidadinicio == 13 || cantidadinicio == 15) {
 
 
 				nuc = document.getElementById('nuc').value;
@@ -419,14 +419,14 @@ function saveCarpet(idMp, mes, anio, estatResolucion, idUnidad, deten) {
 	////// VALIDAR SI ES UN NO EJERCICIO Y ADEMAS NO HAYA SELECIONADO LA CAUSA ///////////
 
 
-	if (cantidadinicio > 13) {
+	if (cantidadinicio > 15) {
 		var slice2 = texto.slice(0, -1);
 		document.getElementById("nuc").value = slice2;
 	} else {
 
-		if (cantidadinicio < 13) { } else {
+		if (cantidadinicio < 13 || cantidadinicio == 14 ) { swal("", "Longitud de nuc invalida.", "warning"); } else {
 
-			if (cantidadinicio == 13) {
+			if (cantidadinicio == 13 || cantidadinicio == 15) {
 
 
 				if (estatResolucion == 22 && envioselect == 0) { swal("", "Debe seleccionar un motivo.", "warning"); } else {

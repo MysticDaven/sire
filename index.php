@@ -894,7 +894,7 @@ if ($idEnlace == 14 || $idEnlace == 15 || $idEnlace == 23 || $idEnlace == 22 || 
 	<script language="JavaScript" type="text/javascript" src="js/litigacionSENAP_230404.js"></script>
 	<script type="text/javascript" src="js/carpetasJudicializadas.js"></script>
 	<? if ($format == 16) { ?>
-		<script type="text/javascript" src="js/medidasDeProteccion.js"></script>
+		<script type="text/javascript" src="js/medidasDeProteccion_20252010.js"></script>
 		<!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
 	<? } ?>
 

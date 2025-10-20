@@ -13,7 +13,7 @@ function modalMandamientos_PDF(ID_MANDAMIENTO_INTERNO){
 }
 
 function modalMandamientos_registro(tipoModal, idEnlace, ID_MANDAMIENTO_INTERNO, typeArch, typeCheck, idfisca, idUnidad){
-
+     console.log("Entra aqui");
     cont = document.getElementById('contModalMandamientos_registro');
     ajax=objetoAjax();
     ajax.open("POST", "format/mandamientosJudiciales/modalMandamientos_registro.php");

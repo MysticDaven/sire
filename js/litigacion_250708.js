@@ -1139,6 +1139,12 @@ function saveDeterminacionXimputado(nuc, idMp, estatusResolucion, mes, anio, det
     var imputadoID = document.getElementById("imputadoSeletedEnv").value;
     var nuc = document.getElementById("nuc").value;
 
+    // ===== INICIA LA NUEVA VALIDACIÓN =====
+    if (nuc.length !== 13 && nuc.length !== 15) {
+        swal("", "La longitud del NUC debe ser de 13 o 15 caracteres.", "warning");
+        return; // Detenemos la ejecución de la función si no es válido
+    }
+
     if (imputadoID == 0) {
         swal("", "Debe seleccionar un imputado para la resolución.", "warning");
     } else {
@@ -1222,56 +1228,104 @@ function checkNucJudiciImputado(estatusResolucion, idMp, mes, anio, deten, idUni
 
 
 //////////// VALIDA EL NUC INGRESADO SI EXISTE EN SICAP PARA PODER SER INGRESADO A SISTEMA Y SI NO ES ASI HAY QUE INGRESARLO A SICAP PRIMERO /////////////////////
-
+let nucValidationTimer2;
 function nucInserts(idinput, idMp, mes, anio, estatResolucion, deten, idUnidad) {
 
+    // 1. Limpiamos cualquier temporizador anterior cada vez que se presiona una tecla.
+    clearTimeout(nucValidationTimer2);
 
     texto = document.getElementById(idinput).value;
     cantidadinicio = document.getElementById(idinput).value.length;
 
-    if (cantidadinicio > 13) {
+    // Cortamos el valor si excede el máximo de 15
+    if (cantidadinicio > 15) {
         var slice2 = texto.slice(0, -1);
         document.getElementById(idinput).value = slice2;
-    } else {
+        return;
+    }
 
-        if (cantidadinicio < 13) { } else {
-            if (cantidadinicio == 13) {
+    // 2. Lógica de validación condicional
+    if (cantidadinicio === 15) {
+        // Si la longitud es 15, validamos inmediatamente.
 
-                nuc = document.getElementById('nuc').value;
+        nuc = document.getElementById('nuc').value;
 
-                acc = "existeNuc";
-                ajax = objetoAjax();
-                ajax.open("POST", "format/litigacion/accionesNucsLit.php");
+        acc = "existeNuc";
+        ajax = objetoAjax();
+        ajax.open("POST", "format/litigacion/accionesNucsLit.php");
 
-                ajax.onreadystatechange = function () {
-                    if (ajax.readyState == 4 && ajax.status == 200) {
+        ajax.onreadystatechange = function () {
+            if (ajax.readyState == 4 && ajax.status == 200) {
 
-                        var cadCodificadaJSON = ajax.responseText;
-                        var objDatos = eval("(" + cadCodificadaJSON + ")");
-                        if (objDatos.first == "NO") { getExpediente("expedCont", nuc); swal("", "El numero de caso no existe.", "warning"); } else {
+                var cadCodificadaJSON = ajax.responseText;
+                var objDatos = eval("(" + cadCodificadaJSON + ")");
+                if (objDatos.first == "NO") {
+                    getExpediente("expedCont", nuc);
+                    swal("", "El numero de caso no existe.", "warning");
+                    document.getElementById('nuc').value = '';
+                } else {
 
-                            if (objDatos.first == "SI") {
+                    if (objDatos.first == "SI") {
 
-                                if(estatResolucion != 181){
-                                    ////// VALIDAR SI EL NUC SE ENCUENTRA YA JUDICIALIZADO O NO ///////
-                                    checkNucJudiciImputado(estatResolucion, idMp, mes, anio, deten, idUnidad);
+                        if(estatResolucion != 181){
+                            ////// VALIDAR SI EL NUC SE ENCUENTRA YA JUDICIALIZADO O NO ///////
+                            checkNucJudiciImputado(estatResolucion, idMp, mes, anio, deten, idUnidad);
 
-                                    /////// SE EJECUTARA CUANDO YA SE QUIERA INSERTAR EL NUC EN BD DESPUES DE VALIDAR LOS IMPUTADOS
-                                    // getDatosNucDetermEstlit(nuc, idMp, estatResolucion, mes, anio, deten, idUnidad);
-                                }else{
-                                    sendDataModalImputadosNUC_tramite(nuc , idMp, mes, anio, estatResolucion, idUnidad);
-                                }
+                            /////// SE EJECUTARA CUANDO YA SE QUIERA INSERTAR EL NUC EN BD DESPUES DE VALIDAR LOS IMPUTADOS
+                            // getDatosNucDetermEstlit(nuc, idMp, estatResolucion, mes, anio, deten, idUnidad);
+                        }else{
+                            sendDataModalImputadosNUC_tramite(nuc , idMp, mes, anio, estatResolucion, idUnidad);
+                        }
 
+                    }
+                }
+            }
+        }
+        ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        ajax.send("&nuc=" + nuc + "&acc=" + acc);
+    } else if (cantidadinicio === 13) {
+        // Si la longitud es 13, esperamos 500ms antes de validar.
+        // Si el usuario escribe otro carácter, este temporizador se cancelará.
+        nucValidationTimer2 = setTimeout(() => {
+
+            nuc = document.getElementById('nuc').value;
+
+            acc = "existeNuc";
+            ajax = objetoAjax();
+            ajax.open("POST", "format/litigacion/accionesNucsLit.php");
+
+            ajax.onreadystatechange = function () {
+                if (ajax.readyState == 4 && ajax.status == 200) {
+
+                    var cadCodificadaJSON = ajax.responseText;
+                    var objDatos = eval("(" + cadCodificadaJSON + ")");
+                    if (objDatos.first == "NO") {
+                        getExpediente("expedCont", nuc);
+                        swal("", "El numero de caso no existe.", "warning");
+                        document.getElementById('nuc').value = '';
+                    } else {
+
+                        if (objDatos.first == "SI") {
+
+                            if(estatResolucion != 181){
+                                ////// VALIDAR SI EL NUC SE ENCUENTRA YA JUDICIALIZADO O NO ///////
+                                checkNucJudiciImputado(estatResolucion, idMp, mes, anio, deten, idUnidad);
+
+                                /////// SE EJECUTARA CUANDO YA SE QUIERA INSERTAR EL NUC EN BD DESPUES DE VALIDAR LOS IMPUTADOS
+                                // getDatosNucDetermEstlit(nuc, idMp, estatResolucion, mes, anio, deten, idUnidad);
+                            }else{
+                                sendDataModalImputadosNUC_tramite(nuc , idMp, mes, anio, estatResolucion, idUnidad);
                             }
+
                         }
                     }
                 }
-                ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                ajax.send("&nuc=" + nuc + "&acc=" + acc);
-
             }
-        }
+            ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            ajax.send("&nuc=" + nuc + "&acc=" + acc);
+        }, 500); // 500 milisegundos = medio segundo
     }
+
 }
 
 ////////////////////////////////
@@ -2705,7 +2759,6 @@ function sendDataModalImputadosNUC_tramite(nuc, idMp, mes, anio, estatResolucion
         },
         dataType: 'json',
         success: function(response) {
-            console.log('entra aki');
             if (response.success) {
                 if (response.existeRegistro) {
                     // Si existe, mostrar alerta con la información
@@ -2748,11 +2801,11 @@ function sendDataModalImputadosNUC_tramite(nuc, idMp, mes, anio, estatResolucion
                         "&estatResolucion=" + estatResolucion + "&idUnidad=" + idUnidad);
                 }
             } else {
-                swal("Error", "Ocurrió un error al verificar el NUC1", "error");
+                swal("Error", "Ocurrió un error al verificar el NUC", "error");
             }
         },
         error: function(xhr, status, error) {
-            swal("Error", "Ocurrió un error al verificar el NUC:2 " + error, "error");
+            swal("Error", "Ocurrió un error al verificar el NUC: " + error, "error");
         }
     });
 }

@@ -203,7 +203,7 @@ if (isset($_POST["idMedida"])) {
 			<div class="row">
 				<div class="col-xs-12 col-sm-12  col-md-4">
 					<label for="nuc">NUC: <span class="aste">(*)</span></label>
-					<input class="form-control" value="<? if ($a == 1) {echo $get_nuc;} ?>" onchange="validateMedidaOK(this.id)" id="nuc" type="text" <? if ($rolUser == 1 || $rolUser == 3) { ?> disabled <? } ?>>
+					<input class="form-control" value="<? if ($a == 1) {echo $get_nuc;} ?>" maxlength="15" oninput="this.value = this.value.toUpperCase();"  onchange="validateMedidaOK(this.id)" id="nuc" type="text" <? if ($rolUser == 1 || $rolUser == 3) { ?> disabled <? } ?>>
 				</div>
 				<div class="col-xs-12 col-sm-12  col-md-4">
 					<label for="idFiscaliaProc">Fiscalía ó Unidad de procedencia :</label>

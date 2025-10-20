@@ -62,7 +62,7 @@ if (isset($_POST["idMedida"])){
 						<?if($checkInfoPrevia == 0){ ?>
 						<div class="row">
 								<div class="col-xs-12 col-sm-12  col-md-2">
-								 <button type="button" class="btn btn-primary btn-lg" onclick="saveDatosGenerales(<?php echo $idEnlace; ?> , <?php echo $fraccion; ?>, <?echo $idMedida ?> , <?echo $nuc ?>)">Guardar información </button>
+								 <button type="button" class="btn btn-primary btn-lg" onclick="saveDatosGenerales(<?php echo $idEnlace; ?> , <?php echo $fraccion; ?>, <?echo $idMedida ?> , '<?echo $nuc ?>')">Guardar información </button>
 							 </div>
 					 </div><br>
 					<? } ?>
@@ -161,7 +161,7 @@ if (isset($_POST["idMedida"])){
 											type="button" <?if($rolUser != 3 && $rolUser != 4){ ?> disabled <? } ?> 
 											class="btn btn-primary btn-lg" 
 											onclick="											
-												saveDatosResoluciones(<?php echo $idEnlace; ?> , <?php echo $fraccion; ?>, <?echo $idMedida ?>, <?echo $a; ?>, <?= $idResolucion[0]; ?>, '<?= $fechaConclusion; ?>', <?= json_encode($aplicadas); ?>, <?= $nuc ?>, <?= $getDataGenerales[0][2] ?>)
+												saveDatosResoluciones(<?php echo $idEnlace; ?> , <?php echo $fraccion; ?>, <?echo $idMedida ?>, <?echo $a; ?>, <?= $idResolucion[0]; ?>, '<?= $fechaConclusion; ?>', <?= json_encode($aplicadas); ?>, '<?= $nuc ?>', <?= $getDataGenerales[0][2] ?>)
 											">Guardar información
 										</button>
 									</div>
@@ -287,7 +287,7 @@ if (isset($_POST["idMedida"])){
 																			<?php if($rolUser == 3 || $rolUser == 4) { ?>
 																			onclick="
 																				ocultarDiv('contTableModifica');
-																				modalMedidas(<?php echo $idEnlace; ?>, <?php echo $idMedida; ?>, <?php echo $nuc; ?>)" 
+																				modalMedidas(<?php echo $idEnlace; ?>, <?php echo $idMedida; ?>, '<?php echo $nuc; ?>')"
 																			<?php } ?>
 																			title="Editar" 
 																			style="cursor: pointer; color: orange; font-size: 18px;" 
@@ -845,7 +845,7 @@ if (isset($_POST["idMedida"])){
 										style="width: 95%;" 
 										type="button" 
 										class="btn btn-primary btn-lg" 
-										onclick="uploadSeguimiento(<?php echo $idMedida; ?>, <?php echo $idEnlace; ?>, <?= $nuc; ?>)"
+										onclick="uploadSeguimiento(<?php echo $idMedida; ?>, <?php echo $idEnlace; ?>, '<?= $nuc; ?>')"
 										>Subir
 									</button></center>
 								</div>								

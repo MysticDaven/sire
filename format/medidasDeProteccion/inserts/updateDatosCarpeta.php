@@ -73,7 +73,7 @@ if($idMedida == 0 && $rolUser != 4){
     BEGIN TRANSACTION
      SET NOCOUNT ON
      
-       UPDATE medidas.medidasProteccion SET nuc = $data[1], idDelito = $data[2], fechaAcuerdo = $fechaAcuerdo, diaSemana = DATEPART(dw, $fechaAcuerdo), diaMes = DATEPART(day, $fechaAcuerdo), mes = DATEPART(month, $fechaAcuerdo), anio = DATEPART(year, $fechaAcuerdo), idEnlace = $idEnlace, idFiscaliaProcedencia = $data[5] WHERE idMedida = $idMedida
+       UPDATE medidas.medidasProteccion SET nuc = '$data[1]', idDelito = $data[2], fechaAcuerdo = $fechaAcuerdo, diaSemana = DATEPART(dw, $fechaAcuerdo), diaMes = DATEPART(day, $fechaAcuerdo), mes = DATEPART(month, $fechaAcuerdo), anio = DATEPART(year, $fechaAcuerdo), idEnlace = $idEnlace, idFiscaliaProcedencia = $data[5] WHERE idMedida = $idMedida
 
        COMMIT
       END TRY
@@ -91,7 +91,7 @@ if($idMedida == 0 && $rolUser != 4){
      SET NOCOUNT ON
      
        UPDATE medidas.medidasProteccion SET idMP = $data[6], idUnidad = $data[9], idFiscalia = $data[10],
-       nuc = $data[1], idDelito = $data[2], fechaAcuerdo = $fechaAcuerdo, diaSemana = DATEPART(dw, $fechaAcuerdo), diaMes = DATEPART(day, $fechaAcuerdo), mes = DATEPART(month, $fechaAcuerdo), anio = DATEPART(year, $fechaAcuerdo), idEnlace = $idEnlace, idFiscaliaProcedencia = $data[5], fechaConclusion = $fechaConclusion, idCatCoorporacion = $data[13], nOficio = '$data[14]' WHERE idMedida = $idMedida
+       nuc = '$data[1]', idDelito = $data[2], fechaAcuerdo = $fechaAcuerdo, diaSemana = DATEPART(dw, $fechaAcuerdo), diaMes = DATEPART(day, $fechaAcuerdo), mes = DATEPART(month, $fechaAcuerdo), anio = DATEPART(year, $fechaAcuerdo), idEnlace = $idEnlace, idFiscaliaProcedencia = $data[5], fechaConclusion = $fechaConclusion, idCatCoorporacion = $data[13], nOficio = '$data[14]' WHERE idMedida = $idMedida
 
        UPDATE medidas.cuadernoAntecedentes SET temporalidad = $data[12] , fechaConclusion = $fechaConclusion WHERE idMedida = $idMedida
 

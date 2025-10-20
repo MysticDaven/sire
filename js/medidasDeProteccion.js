@@ -91,7 +91,7 @@ function modalDatosMedida(tipoModal, idEnlace, b, fraccion, idMedida, sectionAct
 					swal({
 						title: "¿Aplicar medida de protección en el NUC: " + nuc + "?",
 						html: true,
-						text: "<hr><span>Agente del Ministerio Público: <b>" + getArrayData[0][5] + "</b><br>Expediente: <b>" + getArrayData[0][1] + "</b><br>Apertura: <b>" + getArrayData[0][2] + "</b><br>Unidad de investigación: <b>" + getArrayData[0][3] + "</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",
+						//text: "<hr><span>Agente del Ministerio Público: <b>" + getArrayData[0][5] + "</b><br>Expediente: <b>" + getArrayData[0][1] + "</b><br>Apertura: <b>" + getArrayData[0][2] + "</b><br>Unidad de investigación: <b>" + getArrayData[0][3] + "</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",
 						type: "success",
 						showCancelButton: true,
 						confirmButtonColor: 'rgba(21,47,74,.9)',
@@ -122,7 +122,7 @@ function modalDatosMedida(tipoModal, idEnlace, b, fraccion, idMedida, sectionAct
 							}
 						});
 				} else if (existeNuc == "NUC_NOEXISTESIGI") {
-					swal("", "El NUC no se encuentra iniciado en SIGI, favor de verificar con la unidad correspondiente", "warning");
+					swal("", "El NUC no se encuentra iniciado en SICAP, favor de verificar con la unidad correspondiente", "warning");
 				} else if (existeNuc == "NUC_INVALIDO") {
 					swal("", "Longitud de NUC invalida, favor de verificar.", "warning");
 				}
@@ -225,7 +225,7 @@ function modalDatosMedidaCapturista(tipoModal, idEnlace, b, fraccion, idMedida, 
 					swal({
 						title: "¿Aplicar medida de protección en el NUC: " + nuc + "?",
 						html: true,
-						text: "<hr><span>Agente del Ministerio Público: <b>" + getArrayData[0][5] + "</b><br>Expediente: <b>" + getArrayData[0][1] + "</b><br>Apertura: <b>" + getArrayData[0][2] + "</b><br>Unidad de investigación: <b>" + getArrayData[0][3] + "</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",
+						//text: "<hr><span>Agente del Ministerio Público: <b>" + getArrayData[0][5] + "</b><br>Expediente: <b>" + getArrayData[0][1] + "</b><br>Apertura: <b>" + getArrayData[0][2] + "</b><br>Unidad de investigación: <b>" + getArrayData[0][3] + "</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",
 						type: "success",
 						showCancelButton: true,
 						confirmButtonColor: 'rgba(21,47,74,.9)',
@@ -258,7 +258,7 @@ function modalDatosMedidaCapturista(tipoModal, idEnlace, b, fraccion, idMedida, 
 							}
 						});
 				} else if (existeNuc == "NUC_NOEXISTESIGI") {
-					swal("", "El NUC no se encuentra iniciado en SIGI, favor de verificar con la unidad correspondiente", "warning");
+					swal("", "El NUC no se encuentra iniciado en SICAP, favor de verificar con la unidad correspondiente", "warning");
 				} else if (existeNuc == "NUC_INVALIDO") {
 					swal("", "Longitud de NUC invalida, favor de verificar.", "warning");
 				}
@@ -429,7 +429,7 @@ function asignar_medida_mp(tipoModal, idEnlace, b, fraccion, idMedida, sectionAc
 				swal({
 					title: "¿Asignar el NUC: " + nuc + " al Agente del Ministerio Publico: " + mpAsignado + '?',
 					html: true,
-					text: "<hr><span>Agente del Ministerio Público: <b>" + getArrayData[0][5] + "</b><br>Expediente: <b>" + getArrayData[0][1] + "</b><br>Apertura: <b>" + getArrayData[0][2] + "</b><br>Unidad de investigación: <b>" + getArrayData[0][3] + "</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",
+					//text: "<hr><span>Agente del Ministerio Público: <b>" + getArrayData[0][5] + "</b><br>Expediente: <b>" + getArrayData[0][1] + "</b><br>Apertura: <b>" + getArrayData[0][2] + "</b><br>Unidad de investigación: <b>" + getArrayData[0][3] + "</b><br><br><b> * </b>Información del NUC validada en SIGI.<hr> </span>",
 					type: "success",
 					showCancelButton: true,
 					confirmButtonColor: 'rgba(21,47,74,.9)',
@@ -753,7 +753,7 @@ function validaNucSIGI(nuc, my_callback) {
 	resp[1] = "NUC_NOEXISTESIGI";
 	resp[2] = "NUC_OKSIGI";
 
-	if (nuc.length == 13) {
+	if (nuc.length == 13 || nuc.length == 15) {
 		console.log("Longitud de NUC ok, validar NUC en SIGI");
 		$.ajax({
 			type: "POST",
@@ -767,13 +767,13 @@ function validaNucSIGI(nuc, my_callback) {
 				var obj = eval("(" + json + ")");
 				if (obj.first == "NO") {
 					$('#cargandoInfo').modal('hide');
-					console.log("El nuc NO EXISTE en la base de datos de SIGI");
+					console.log("El nuc NO EXISTE en la base de datos de SICAP");
 					my_callback(resp[1]); //AQUI
 					return resp[1];
 				} else {
 					if (obj.first == "SI") {
 						$('#cargandoInfo').modal('hide');
-						console.log("El nuc SI EXISTE en la base de datos de SIGI");
+						console.log("El nuc SI EXISTE en la base de datos de SICAP");
 						my_callback(resp[2], obj.arrayData); //AQUI
 						return [resp[2], obj.arrayData];
 					}

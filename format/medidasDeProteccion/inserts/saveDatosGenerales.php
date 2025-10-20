@@ -86,7 +86,7 @@ if ($idMedida == 0 && $rolUser != 4) {
      SET NOCOUNT ON
        declare @insertado int
      
-       INSERT INTO medidas.medidasProteccion VALUES($data[1],0,0,0,$data[2], $fechaAcuerdo,GETDATE(), DATEPART(dw, $fechaAcuerdo), DATEPART(day, $fechaAcuerdo), DATEPART(month, $fechaAcuerdo), DATEPART(year, $fechaAcuerdo), $idEnlace, $data[10], 1, '',null)
+       INSERT INTO medidas.medidasProteccion VALUES('$data[1]',0,0,0,$data[2], $fechaAcuerdo,GETDATE(), DATEPART(dw, $fechaAcuerdo), DATEPART(day, $fechaAcuerdo), DATEPART(month, $fechaAcuerdo), DATEPART(year, $fechaAcuerdo), $idEnlace, $data[10], 1, '',null)
 
        select @insertado = @@IDENTITY
 
@@ -131,7 +131,7 @@ if ($idMedida == 0 && $rolUser != 4) {
                           SET NOCOUNT ON
                             declare @insertado int
                           
-                            INSERT INTO medidas.medidasProteccion VALUES($data[1],$data[11],$data[14],$data[15],$data[2], $fechaAcuerdo,GETDATE(), DATEPART(dw, $fechaAcuerdo), DATEPART(day, $fechaAcuerdo), DATEPART(month, $fechaAcuerdo), DATEPART(year, $fechaAcuerdo), $idEnlace, $data[10], 1, $fechaConclusion, $data[18], '$data[19]')
+                            INSERT INTO medidas.medidasProteccion VALUES('$data[1]',$data[11],$data[14],$data[15],$data[2], $fechaAcuerdo,GETDATE(), DATEPART(dw, $fechaAcuerdo), DATEPART(day, $fechaAcuerdo), DATEPART(month, $fechaAcuerdo), DATEPART(year, $fechaAcuerdo), $idEnlace, $data[10], 1, $fechaConclusion, $data[18], '$data[19]')
 
                             select @insertado = @@IDENTITY
 
@@ -159,7 +159,7 @@ if ($idMedida == 0 && $rolUser != 4) {
     }
     //CREAREMOS LAS SENTENCIAS PARA INSERTAR LAS MEDIDAS
     while ($aux < $tam) {
-      $consulta = $consulta . "INSERT INTO medidas.medidasAplicadas (idMedida, nuc, idCatFraccion) VALUES ($idMedida, $data[1], $dataMedidasAplicadas[$aux]) ";
+      $consulta = $consulta . "INSERT INTO medidas.medidasAplicadas (idMedida, nuc, idCatFraccion) VALUES ($idMedida, '$data[1]', $dataMedidasAplicadas[$aux]) ";
       $aux++;
     }
   }

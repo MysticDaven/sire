@@ -34,6 +34,8 @@ if (isset($_POST["idMedida"])){
 	$idVictima = $getDataVictimas[0][0];
 	$getDataTestigo = getDataTestigos($connMedidas, $idMedida);
 	$idTestigo = $getDataTestigo[0][0];
+	$getInvolucrados = getDataInvolucrados($connMedidas, $idMedida);
+	$idInvolucrado = $getInvolucrados[0][0];
 }
 
 ?>
@@ -84,7 +86,597 @@ if (isset($_POST["idMedida"])){
 			<!--DATOS GENERALES NUC Y CUADERNO DE ANTECEDENTES-->
 			<!--DATOS RESOLUCIÓN-->
 			<div class="sectionData" id="resolucion">
-				<p><?= $rolUser ?></p>
+				<div class="panel panel-default fd1">
+					<div class="panel-body">
+						<h5 class="text-on-pannel"><strong>Resolución</strong></h5>
+						<?php
+						$registro = getRegistro($connMedidas, $idInvolucrado);
+						$fechaConclusion = '';
+						$getMedidasAplicadas = getMedidasAplicadas($connMedidas, $idVictima);
+						if($getMedidasAplicadas > 0){
+							for ($h = 0; $h < sizeof($getMedidasAplicadas); $h++) {
+								$aplicadas[$h] = $getMedidasAplicadas[$h][0];
+							}
+						}
+						?>
+						<div id="contDataResoluciones">
+							<div class="row">
+								<div class="col-xs-12 col-sm-12  col-md-2">	
+									<button 
+										type="button" <?if($rolUser != 3 && $rolUser != 4){ ?> disabled <? } ?> 
+										class="btn btn-primary btn-lg" 
+										onclick="											
+											saveDatosResoluciones(<?php echo $idEnlace; ?> , <?echo $idMedida ?>, '<?= $fechaConclusion; ?>', <?= json_encode($aplicadas); ?>, <?= $nuc ?>, <?= '' ?>)
+										">Guardar información
+									</button>
+								</div>
+							</div><br>
+							<div>
+								<div class="column" style="margin-bottom: 30px;">
+									<button type="button" class="btn btn-secundary btn-lg" onclick="resolucionesDiv(<?php echo 1; ?>)">Ratificación</button>
+									<button type="button" class="btn btn-secundary btn-lg" onclick="resolucionesDiv(<?php echo 2; ?>)">Modificada</button>
+									<button type="button" class="btn btn-secundary btn-lg" onclick="resolucionesDiv(<?php echo 3; ?>)">Ampliada</button>
+									<button type="button" class="btn btn-secundary btn-lg" onclick="resolucionesDiv(<?php echo 4; ?>)">Revocada</button>
+								</div>
+								<div class="col-md-12 pd-4">
+									<?php
+									if (sizeof($getInvolucrados) > 0 ) { ?>
+										<div class="col-sm-12 col-md-6">
+											<label for="idInvolucrado">Involucrado(s)</label>
+											<select class="form-control" id="idInvolucrado"
+												onchange="loadResoluciones(this.value, <?= $idMedida ?>, <?= $idEnlace ?>)">
+												<?php
+												foreach ($getInvolucrados as $involucrado) { ?>
+													<option
+														value="<?= $involucrado[0] ?>"
+														<?php
+														if ($involucrado[0] == $idInvolucrado) { 
+															echo 'selected';
+														} ?>									
+														> <?echo $involucrado[2]; if ($involucrado[1] == 1) { echo ' (Víctima)'; } else { echo ' (testigo) '; } ?> 
+													</option>
+												<? } ?>
+											</select>
+										</div>
+									<? }?>								
+								</div>								
+								<div id="contResoluciones">
+									<div class="sectionData" id="divRatificada">
+										<div class="row">
+											<div class="col-xs-12 col-sm-12 col-md-2">
+												<label for="ratificacion">Ratificación: <span class="aste">(*)</span></label>
+												<select class="form-control" id="ratificacion">
+													<option value="">Seleccione</option>
+													<option class="fontBold" value="1">Sí</option>
+													<option class="fontBold" value="0">No</option>
+												</select>
+											</div>
+
+											<div class="col-xs-12 col-sm-12 col-md-4">
+												<label for="observacionRatifica">Observación: <span class="aste">(*)</span></label>
+												<input class="form-control" id="observacionRatifica" type="text" value="">
+											</div>
+										</div>								
+										<?php 
+										$getRatificada = getRatificada($connMedidas, $idInvolucrado);
+										if (sizeof($getRatificada) > 0) { ?>
+											<div class="row" style="margin-top: 20px;">
+												<div class="col-xs-12">
+													<div class="panel panel-default fd1">
+														<div class="panel-body">
+															<h5 class="text-on-pannel"><strong>Valores previos</strong></h5>
+															<table class="table table-bordered">
+																<thead>
+																	<tr class="cabeceraTablaVictimas">
+																		<th>#</th>
+																		<th>Medida Ratificada</th>
+																		<th>Observaciones</th>
+																		<th>Eliminar</th>
+																	</tr>
+																</thead>
+																<tbody>
+																	<?php for ($i = 0; $i < sizeof($getRatificada); $i++) { ?>
+																		<tr>
+																			<td><?php echo $i + 1; ?></td>
+																			<td>Sí</td>
+																			<td><?php echo $getRatificada[$i]['observacion']; ?></td>
+																			<td class="text-center">
+																				<span 
+																					onclick="deleteResolucion(<?= $getRatificada[$i]['idResolucion'] ?>, <?= $idMedida ?>, <?= $idEnlace ?>, 1)"
+																					title="Eliminar" 
+																					style="cursor: pointer; color: red; font-size: 18px;" 
+																					class="glyphicon glyphicon-trash">
+																				</span>
+																			</td>
+																		</tr>
+																	<?php } ?>
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+											</div>
+										<?php } ?>
+									</div>
+									<div class="sectionData" id="divModificada">
+										<div class="row" style="margin-bottom: 30px;">
+											<div class="col-xs-12 col-sm-12 col-md-2">
+												<label for="modifica">Modificada: <span class="aste">(*)</span></label>
+												<select class="form-control" id="modifica">
+													<option value="">Seleccione</option>
+													<option class="fontBold" value="1">Si</option>
+													<option class="fontBold" value="0">No</option>
+												</select>
+											</div>
+											<div class="col-sm-12 col-md-3">
+												<label for="nOficioModificada">Número de oficio: <span class="aste">(*)</span></label>
+												<input class="form-control" id="nOficioModificada" type="text"
+													value=""
+												>											
+											</div>										
+											<div class="col-xs-12 col-sm-12  col-md-3">
+												<label for="temporalidadResMod">Temporalidad: <span class="aste">(*)</span></label>
+												<select class="form-control" id="temporalidadResMod" onchange="updateConclusion(this.value, 'Modificada');">
+													<option value="">Seleccione</option>
+													<?php for ($i=1; $i<=90; $i++){ ?>
+														<option class="fontBold" value="<?php echo $i; ?>"><?php echo $i;?> días</option>
+													<?php } ?>
+												</select>											
+											</div>											
+											<div class="col-xs-12 col-sm-12 col-md-4">
+												<label for="observacionModifica">Observación: </label>
+												<input class="form-control" value="" id="observacionModifica" type="text">
+											</div>
+											<div class="col-xs-12 col-sm-12 col-md-3">
+												<label for="fechaInicioModificadaN">Fecha de inicio: <span class="aste">(*)</span></label>
+												<input 
+													id="fechaInicioModificadaN" 
+													type="datetime-local" 
+													value="<?= $registro['fechaAcuerdo']->format('Y-m-d\TH:i'); ?>"
+													name="fechaResAmpliadaN" 
+													onchange="
+														validateMedidaOK(this.id);
+														updateConclusion(document.getElementById('temporalidadResMod').value, 'Modificada');
+													" 
+													class="fechas form-control gehit" />
+											</div>
+											<div class="col-xs-12 col-sm-12 col-md-3">
+												<label for="fechaConclusionModificadaN">Fecha de conclusión: <span class="aste">(*)</span></label>
+												<input 
+													id="fechaConclusionModificadaN" 
+													type="datetime-local" 
+													value="<?= $registro['fechaConclusion']->format('Y-m-d\TH:i'); ?>" 
+													name="fechaConclusionModificadaN" 
+													onchange="validateMedidaOK(this.id)" 
+													class="fechas form-control gehit"
+													disabled/>
+											</div>										
+											<div class="col-xs-12 col-sm-12 col-md-3">
+												<label for="fechaInicioModificada">Fecha de inicio actual </label>
+												<input 
+													id="fechaInicioModificada" 
+													type="datetime-local" 
+													value="<?= $registro['fechaAcuerdo']->format('Y-m-d\TH:i'); ?>"
+													name="fechaInicioModificada" 
+													onchange="validateMedidaOK(this.id)" 
+													class="fechas form-control gehit" 
+													disabled/>
+											</div>
+											<div class="col-xs-12 col-sm-12 col-md-3">
+												<label for="fechaConclusionModificada">Fecha de conclusión actual </label>
+												<input 
+													id="fechaConclusionModificada" 
+													type="datetime-local" 
+													value="<?= $registro['fechaConclusion']->format('Y-m-d\TH:i'); ?>" 
+													name="fechaConclusionModificada" 
+													onchange="validateMedidaOK(this.id)" 
+													class="fechas form-control gehit" 
+													disabled/>
+											</div>
+										</div>
+										<div class="panel panel-default fd1" >
+											<div class="panel-body">
+												<h5 class="text-on-pannel"><strong>Fracciones Actuales</strong></h5>
+												<?php $getDataFracciones = modificarMedidasAplicadasInvolucrado($connMedidas, $idInvolucrado);
+												if (sizeof($getDataFracciones) > 0) { $totalFraccAplicadas = sizeof($getDataFracciones); ?>
+												<div class="row">
+													<div class="col-xs-12 col-sm-12 col-md-12">
+														<table class="table table-bordered">
+															<thead>
+																<tr class="cabeceraTablaVictimas">
+																	<th>#</th>
+																	<th>Fracción</th>
+																	<th>Acciones</th>
+																</tr>
+															</thead>
+															<tbody>
+																<?php for ($h = 0; $h < sizeof($getDataFracciones); $h++) { ?>
+																<tr>
+																	<td><?php echo $getDataFracciones[$h][2]; ?></td>
+																	<td><?php echo $getDataFracciones[$h][1]; ?></td>
+																	<td>
+																		<center>
+																		<span 
+																			<?php if($rolUser == 3 || $rolUser == 4) { ?>
+																			onclick="
+																				ocultarDiv('contTableModifica');
+																				modalMedidas(<?php echo $idEnlace; ?>, <?php echo $idMedida; ?>, <?php echo $nuc; ?>, <?= $medidaVictima ?>, <?= $idInvolucrado ?>, 'contModalMedidasModificada')" 
+																			<?php } ?>
+																			title="Editar" 
+																			style="cursor: pointer; color: orange; font-size: 18px;" 
+																			class="glyphicon glyphicon-edit">
+																		</span>
+																		</center>
+																	</td>
+																</tr>
+																<?php } ?>
+															</tbody>
+														</table>
+													</div>
+												</div>
+												<?php } ?>
+											</div>
+										</div>
+										<div id="contTableModifica">
+											<?php 
+											$getModificada = getModificada($connMedidas, $idInvolucrado);
+											if (sizeof($getModificada) > 0) { ?>
+												<div class="row" style="margin-top: 20px;">
+													<div class="col-xs-12">
+														<div class="panel panel-default fd1">
+															<div class="panel-body">
+																<h5 class="text-on-pannel"><strong>Valores previos</strong></h5>
+																<table class="table table-bordered">
+																	<thead>
+																		<tr class="cabeceraTablaVictimas">
+																			<th>#</th>
+																			<th>Medida Modificada</th>
+																			<th>Observaciones</th>
+																			<th>Fracciones Previas</th>
+																			<th>Fracciones Actuales</th>
+																			<th>Fecha de Conclusión Previa</th>
+																			<th>Fecha de Conclusión Actual</th>
+																			<th>Eliminar</th>
+																		</tr>
+																	</thead>
+																	<tbody>
+																		<?php for ($i = 0; $i < sizeof($getModificada); $i++) { ?>
+																			<tr>
+																				<td><?php echo $i + 1; ?></td>
+																				<td>
+																					<?php 
+																					echo $getModificada[$i]['modificada'] == 1 ? 'SÍ' : 'NO'; 
+																					?>
+																				</td>
+																				<td><?php echo $getModificada[$i]['observacion']; ?></td>
+																				<td><?= $getModificada[$i]['fraccionesPrevias'] ?></td>
+																				<td><?= $getModificada[$i]['fraccionesActuales'] ?></td>
+																				<td>
+																					<?php
+																						$fecha = $getModificada[$i]['fechaPrevia'];
+																						if($fecha instanceof DateTime){
+																							echo $fecha -> format('d/m/Y H:i:s');
+																						}
+																						else{ echo 'ERROR'; }
+																					?>
+																				</td>
+																				<td>
+																					<?php
+																						$fecha = $getModificada[$i]['fechaConclusion'];
+																						if($fecha instanceof DateTime){
+																							echo $fecha -> format('d/m/Y H:i:s');
+																						}
+																						else{ echo 'ERROR'; }
+																					?>
+																				</td>
+																				<td class="text-center">
+																					<span 
+																						onclick="deleteResolucion(<?= $getModificada[$i]['idModificada'] ?>, <?= $idMedida ?>, <?= $idEnlace ?>, 'modificada')"
+																						title="Eliminar" 
+																						style="cursor: pointer; color: red; font-size: 18px;" 
+																						class="glyphicon glyphicon-trash">
+																					</span>
+																				</td>
+																			</tr>
+																		<?php } ?>
+																	</tbody>
+																</table>
+															</div>
+														</div>
+													</div>
+												</div>
+											<?php } ?>										
+										</div>
+										<div id="contModalMedidasModificada">																							
+												
+										</div>										
+									</div>				
+									<div class="sectionData" id="divAmpliada">
+										<div class="row" style="margin-bottom: 30px;">
+											<div class="col-xs-12 col-sm-12  col-md-2">
+												<label for="ampliada">Ampliada: <span class="aste">(*)</span></label>
+												<select class="form-control" id="ampliada" onchange="disabledItem('ampliada', 'temporalidadRes')">
+													<option value="">Seleccione</option>
+												<option class="fontBold" value="1">Si</option>
+												<option class="fontBold" value="0">No</option>
+												</select>
+											</div>
+											<div class="col-sm-12 col-md-3">
+												<label for="nOficioAmpliada">Número de oficio: <span class="aste">(*)</span></label>
+												<input class="form-control" id="nOficio" type="text"
+													value=""
+												>											
+											</div>										
+											<div class="col-xs-12 col-sm-12  col-md-3">
+												<label for="temporalidadRes">Temporalidad: <span class="aste">(*)</span></label>
+												<select class="form-control" id="temporalidadRes" onchange="updateConclusion(this.value, 'Ampliada');">
+													<option value="">Seleccione</option>
+													<?php for ($i=1; $i<=90; $i++){ ?>
+														<option class="fontBold" value="<?php echo $i; ?>"><?php echo $i;?> días</option>
+													<?php } ?>
+												</select>											
+											</div>
+											<div class="col-xs-12 col-sm-12  col-md-4">
+												<label for="observacionAmpliada">Observación: </label>
+												<input class="form-control" value=""  id="observacionAmpliada"  type="text">
+											</div>
+											<div class="col-xs-12 col-sm-12 col-md-3">
+												<label for="fechaInicioAmpliadaN">Fecha de inicio: <span class="aste">(*)</span></label>
+												<input 
+													id="fechaInicioAmpliadaN" 
+													type="datetime-local" 
+													value="<?= $registro['fechaAcuerdo']->format('Y-m-d\TH:i'); ?>"
+													name="fechaResAmpliadaN" 
+													onchange="
+														validateMedidaOK(this.id);
+														updateConclusion(document.getElementById('temporalidadRes').value, 'Ampliada');
+													" 
+													class="fechas form-control gehit" />
+											</div>
+											<div class="col-xs-12 col-sm-12 col-md-3">
+												<label for="fechaConclusionAmpliadaN">Fecha de conclusión: <span class="aste">(*)</span></label>
+												<input 
+													id="fechaConclusionAmpliadaN" 
+													type="datetime-local" 
+													value="<?= $registro['fechaConclusion']->format('Y-m-d\TH:i'); ?>" 
+													name="fechaConclusionAmpliadaN" 
+													onchange="validateMedidaOK(this.id)" 
+													class="fechas form-control gehit"
+													disabled/>
+											</div>										
+											<div class="col-xs-12 col-sm-12 col-md-3">
+												<label for="fechaInicioAmpliada">Fecha de inicio actual </label>
+												<input 
+													id="fechaInicioAmpliada" 
+													type="datetime-local" 
+													value="<?= $registro['fechaAcuerdo']->format('Y-m-d\TH:i'); ?>"
+													name="fechaResAmpliada" 
+													onchange="validateMedidaOK(this.id)" 
+													class="fechas form-control gehit" 
+													disabled/>
+											</div>
+											<div class="col-xs-12 col-sm-12 col-md-3">
+												<label for="fechaConclusionAmpliada">Fecha de conclusión actual </label>
+												<input 
+													id="fechaConclusionAmpliada" 
+													type="datetime-local" 
+													value="<?= $registro['fechaConclusion']->format('Y-m-d\TH:i'); ?>" 
+													name="fechaConclusionAmpliada" 
+													onchange="validateMedidaOK(this.id)" 
+													class="fechas form-control gehit" 
+													disabled/>
+											</div>											
+										</div>
+										<div class="panel panel-default fd1 pt-4" >
+											<div class="panel-body">
+												<h5 class="text-on-pannel"><strong>Fracciones Actuales</strong></h5>
+												<?php $getDataFracciones = modificarMedidasAplicadasInvolucrado($connMedidas, $idInvolucrado);
+												if (sizeof($getDataFracciones) > 0) { $totalFraccAplicadas = sizeof($getDataFracciones); ?>
+												<div class="row">
+													<div class="col-xs-12 col-sm-12 col-md-12">
+														<table class="table table-bordered">
+															<thead>
+																<tr class="cabeceraTablaVictimas">
+																	<th>#</th>
+																	<th>Fracción</th>
+																	<th>Acciones</th>
+																</tr>
+															</thead>
+															<tbody>
+																<?php for ($h = 0; $h < sizeof($getDataFracciones); $h++) { ?>
+																<tr>
+																	<td><?php echo $getDataFracciones[$h][2]; ?></td>
+																	<td><?php echo $getDataFracciones[$h][1]; ?></td>
+																	<td>
+																		<center>
+																		<span 
+																			<?php if($rolUser == 3 || $rolUser == 4) { ?>
+																			onclick="
+																				ocultarDiv('contTableAmpliada');
+																				modalMedidas(<?php echo $idEnlace; ?>, <?php echo $idMedida; ?>, <?php echo $nuc; ?>, <?= $medidaVictima ?>, <?= $idInvolucrado ?>, 'contModalMedidasAmpliada')" 
+																			<?php } ?>
+																			title="Editar" 
+																			style="cursor: pointer; color: orange; font-size: 18px;" 
+																			class="glyphicon glyphicon-edit">
+																		</span>
+																		</center>
+																	</td>
+																</tr>
+																<?php } ?>
+															</tbody>
+														</table>
+													</div>
+												</div>
+												<?php } ?>
+											</div>
+										</div>										
+										<div id="contTableAmpliada">
+										<?php 
+										$getAmpliada = getAmpliada($connMedidas, $idInvolucrado);
+										if (sizeof($getAmpliada) > 0) { ?>
+											<div class="row" style="margin-top: 20px;">
+												<div class="col-xs-12">
+													<div class="panel panel-default fd1">
+														<div class="panel-body">
+															<h5 class="text-on-pannel"><strong>Valores previos</strong></h5>
+															<table class="table table-bordered">
+																<thead>
+																	<tr class="cabeceraTablaVictimas">
+																		<th>#</th>
+																		<th>Medida Ampliada</th>
+																		<th>Observaciones</th>
+																		<th>Temporalidad Previa</th>
+																		<th>Temporalidad Actual</th>
+																		<th>Fecha de Conclusión Previa</th>
+																		<th>Fecha de Conclusión Actual</th>
+																		<th>Eliminar</th>
+																	</tr>
+																</thead>
+																<tbody>
+																	<?php for ($i = 0; $i < sizeof($getAmpliada); $i++) { ?>
+																		<tr>
+																			<td><?php echo $i + 1; ?></td>
+																			<td>
+																				<?php 
+																				echo $getAmpliada[$i]['ampliacion'] == 1 ? 'SÍ' : 'NO'; 
+																				?>
+																			</td>
+																			<td><?php echo $getAmpliada[$i]['observacion']; ?></td>
+																			<td><?= $getAmpliada[$i]['temporalidadPrevia']; ?></td>
+																			<td><?= $getAmpliada[$i]['temporalidadActual']; ?></td>
+																			<td><?php
+																					$fecha = $getAmpliada[$i]['fechaPrevia'];
+																					if($fecha instanceof DateTime){
+																						$fecha = $fecha -> format('d/m/Y H:i:s');
+																						echo $fecha;
+																					}
+																					else{
+																						echo "ERORR";
+																					}
+																				?>
+																			</td>
+																			<td>
+																				<?php
+																					$fecha = $getAmpliada[$i]['fechaConclusion'];
+																					if($fecha instanceof DateTime){
+																						$fecha = $fecha -> format('d/m/Y H:i:s');
+																						echo $fecha;
+																					}
+																					else{
+																						echo "ERORR";
+																					}
+																				?>
+																			</td>
+																			<td class="text-center">
+																				<span
+																					onclick="deleteResolucion(<?= $getAmpliada[$i]['idAmpliada'] ?>, <?= $idMedida ?>, <?= $idEnlace ?>, 'ampliada')"
+																					title="Eliminar" 
+																					style="cursor: pointer; color: red; font-size: 18px;" 
+																					class="glyphicon glyphicon-trash">
+																				</span>
+																			</td>
+																		</tr>
+																	<?php } ?>
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+											</div>
+										<?php } ?>
+										</div>
+										<div id="contModalMedidasAmpliada">
+
+										</div>
+									</div>
+									<div class="sectionData" id="divRevocada">
+										<div class="col-xs-12 col-sm-12  col-md-2">
+											<label for="revocada">Revocada: <span class="aste">(*)</span></label>
+											<select class="form-control" id="revocada">
+												<option value="">Seleccione</option>
+											<option class="fontBold" value="1">Si</option>
+											<option class="fontBold" value="0">No</option>
+											</select>
+										</div>
+										<div class="col-xs-12 col-sm-12  col-md-4">
+											<label for="observacionRevocada">Observación: <span class="aste">(*)</span></label>
+											<input class="form-control" value=""  id="observacionRevocada"  type="text">
+										</div>
+										<div class="row">
+												<div class="col-xs-12 col-sm-12 col-md-3">
+													<label for="fechaConclusion">Fecha de conclusión: <span class="aste">(*)</span></label>
+													<input 
+														id="fechaConclusionRevocada" 
+														type="datetime-local" 
+														value="<?= $fecha_input ?>" 
+														name="fechaConclusionRevocada" 
+														onchange="validateMedidaOK(this.id)" 
+														class="fechas form-control gehit" 
+														disabled/>
+												</div>
+										</div><br>	
+										<?php 
+										$getRevocada = getRevocada($connMedidas, $idInvolucrado);
+										if (sizeof($getRevocada) > 0) { ?>
+											<div class="row" style="margin-top: 20px;">
+												<div class="col-xs-12">
+													<div class="panel panel-default fd1">
+														<div class="panel-body">
+															<h5 class="text-on-pannel"><strong>Valores previos</strong></h5>
+															<table class="table table-bordered">
+																<thead>
+																	<tr class="cabeceraTablaVictimas">
+																		<th>#</th>
+																		<th>Medida Revocada</th>
+																		<th>Observaciones</th>
+																		<th>Fecha en la que fue revocada</th>
+																		<th>Eliminar</th>
+																	</tr>
+																</thead>
+																<tbody>
+																	<?php for ($i = 0; $i < sizeof($getRevocada); $i++) { ?>
+																		<tr>
+																			<td><?php echo $i + 1; ?></td>
+																			<td>SÍ</td>
+																			<td><?php echo $getRevocada[$i]['observacion']; ?></td>
+																			<td>
+																				<?php
+																					$fecha = $getRevocada[$i]['fechaResolucion'];
+																					if($fecha instanceof DateTime){
+																						echo $fecha -> format('d/m/Y H:i:s');
+																					}
+																					else{
+																						echo 'ERROR';
+																					}
+																				?>
+																			</td>																																			
+																			<td class="text-center">
+																				<span 
+																					onclick="deleteResolucion(<?= $getRevocada[$i]['idResolucion']; ?>, <?= $idMedida ?>, <?= $idEnlace ?>, 4)"
+																					title="Eliminar" 
+																					style="cursor: pointer; color: red; font-size: 18px;" 
+																					class="glyphicon glyphicon-trash">
+																				</span>
+																			</td>
+																		</tr>
+																	<?php } ?>
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+											</div>
+										<?php } ?>																							
+									</div>										
+								</div>																								
+							</div>
+						</div></br>							
+
+						<div id="contDataResolucionesEdit">							
+
+						</div></br>
+					</div>
+				</div> 
 			</div>
 			<!--DATOS RESOLUCIÓN-->
 			<!--DATOS VICTIMA-->
@@ -229,15 +821,15 @@ if (isset($_POST["idMedida"])){
 							<div class="row">
 								<div class="col-xs-12 col-sm-12  col-md-3">
 									<label for="nombreImpu">Nombre: <span class="aste">(*)</span></label>
-									<input class="form-control mandda gehit" value=""  id="nombreImpu"  type="text">
+									<input class="form-control" value=""  id="nombreImpu"  type="text">
 								</div>
 								<div class="col-xs-12 col-sm-12  col-md-3">
 									<label for="paternoImpu">Paterno: <span class="aste">(*)</span></label>
-									<input class="form-control mandda gehit" value=""  id="paternoImpu"  type="text">
+									<input class="form-control" value=""  id="paternoImpu"  type="text">
 								</div>
 								<div class="col-xs-12 col-sm-12  col-md-3">
 									<label for="maternoImpu">Materno: <span class="aste">(*)</span></label>
-									<input class="form-control mandda gehit" value=""  id="maternoImpu"  type="text">
+									<input class="form-control" value=""  id="maternoImpu"  type="text">
 								</div>
 								<div class="col-xs-12 col-sm-12  col-md-2">
 									<label for="generoImpu">Género: <span class="aste">(*)</span></label>
@@ -326,7 +918,7 @@ if (isset($_POST["idMedida"])){
 								</div>
 								<div class="col-xs-12 col-sm-12  col-md-4">
 									<label for="obsConstanciaLlamada">Observaciones: <span class="aste">(*)</span></label>
-									<input class="form-control mandda gehit" value=""  id="obsConstanciaLlamada"  type="text">
+									<input class="form-control" value=""  id="obsConstanciaLlamada"  type="text">
 								</div>
 							</div>
 					 </div></br>
@@ -442,7 +1034,7 @@ if (isset($_POST["idMedida"])){
 										<? } ?>
 									</select>
 								</div>
-							<? }?>							
+							<? }?>														
 								<div class="col-xs-12 col-sm-12  col-md-12" id="tableFraccionesTestigo">
 									<?php if ($totalFraccAplicadas > 0) { ?>
 									<table class="table table-bordered">

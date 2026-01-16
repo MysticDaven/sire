@@ -4,25 +4,33 @@ include("../../../../Conexiones/Conexion.php");
 include("../../../../Conexiones/conexionMedidas.php");
 include("../../../../funcionesMedidasProteccion.php");
 
-$idItem = isset($_POST['idItem']) ? $_POST['idItem'] : null;
+$idResolucion = isset($_POST['idResolucion']) ? $_POST['idResolucion'] : null;
 $idMedida = isset($_POST['idMedida']) ? $_POST['idMedida'] : null;
-$table = isset($_POST['table']) ? $_POST['table'] : null;
+$tipoResolucion = isset($_POST['tipoResolucion']) ? $_POST['tipoResolucion'] : null;
 
-if ($idItem && $table) {
-    $idTable = 'id' . ucfirst($table);
-    $query = "DELETE FROM medidas.$table WHERE $idTable = ?";
-    $params = [&$idItem];
+switch ($tipoResolucion) {
+    case 1:
+        
+    case 4:
+        $query = "DELETE FROM medidas.resolucion WHERE idResolucion = ?";
+        break;
+    case 2:
+        $query = "";
+        break;
+    case 3:
+        $query = "";
+        break;
+}
 
-    $stmt = sqlsrv_prepare($connMedidas, $query, $params);
+$params = [&$idResolucion];
 
-    if ($stmt && sqlsrv_execute($stmt)) {
-        sqlsrv_commit($connMedidas);
-        echo json_encode(['first' => 'SI', 'idMedidaUltimo' => $idMedida]);
-    } else {
-        $errors = sqlsrv_errors();
-        echo json_encode(['first' => 'NO', 'errors' => $errors]);
-    }
+$stmt = sqlsrv_prepare($connMedidas, $query, $params);
+
+if ($stmt && sqlsrv_execute($stmt)) {
+    sqlsrv_commit($connMedidas);
+    echo json_encode(['first' => 'SI', 'idMedidaUltimo' => $idMedida]);
 } else {
-    echo json_encode(['first' => 'NO', 'errors' => 'Faltan parámetros']);
+    $errors = sqlsrv_errors();
+    echo json_encode(['first' => 'NO', 'errors' => $errors]);
 }
 ?>

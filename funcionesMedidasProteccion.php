@@ -238,6 +238,28 @@ function getDataVictimas($connMedidas, $idMedida){
 	if(isset($arreglo)){return $arreglo;}
 }
 
+function getDataInvolucrados ($connMedidas, $idMedida) {
+	$query = 
+		" SELECT
+			idInvolucrado,
+			idTipoInvolucrado,
+			nombre + ' ' + paterno + ' ' + materno AS nombreCompleto
+		FROM medidas.involucrado
+		WHERE idMedida = $idMedida AND idTipoInvolucrado IN (1, 2)
+		ORDER BY idTipoInvolucrado";
+
+	$indice = 0;
+	$stmt = sqlsrv_query($connMedidas, $query);
+	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
+	{
+		$arreglo[$indice][0]=$row['idInvolucrado'];
+		$arreglo[$indice][1]=$row['idTipoInvolucrado'];
+		$arreglo[$indice][2]=$row['nombreCompleto'];
+		$indice++;
+	}
+	if(isset($arreglo)){return $arreglo;}	
+}
+
 function getDataTestigos($connMedidas, $idMedida){
 	$query = "
 	SELECT 
@@ -318,23 +340,28 @@ function getIdResoluciones($connMedidas, $idMedida){
 }
 
 // Función para obtener los datos de las medidas que han sido ratificadas
-function getRatificada($connMedidas, $idResolucion) {
-    $query = "
-        SELECT idRatificada, ratificada, observacion
-        FROM medidas.ratificada
-        WHERE idResolucion = ?";
+function getRatificada($connMedidas, $idInvolucrado) {
+    $query = 
+		"SELECT
+			r.idResolucion,
+			r.idRegistroPrevio,
+			r.observacion
+		FROM medidas.resolucion r
+		INNER JOIN medidas.registro re ON r.idRegistroPrevio = re.idRegistro
+		INNER JOIN medidas.involucrado i ON i.idInvolucrado = re.idInvolucrado
+		WHERE i.idInvolucrado = ? AND r.idTipoResolucion = 1";
     
-    return executeResolucion($connMedidas, $idResolucion, $query);
+    return executeResolucion($connMedidas, $idInvolucrado, $query);
 }
 
 // Función para obtener los datos de las medidas que han sido ampliadas
-function getAmpliada($connMedidas, $idResolucion) {
+function getAmpliada($connMedidas, $idInvolucrado) {
     $query = "
         SELECT idAmpliada, ampliacion, observacion, temporalidadActual, fechaPrevia, fechaConclusion, temporalidadPrevia
         FROM medidas.ampliada
         WHERE idResolucion = ?";
     
-    return executeResolucion($connMedidas, $idResolucion, $query);
+    return executeResolucion($connMedidas, $idInvolucrado, $query);
 }
 
 // Función para obtener los datos de las medidas que han sido modificadas
@@ -348,18 +375,24 @@ function getModificada($connMedidas, $idResolucion) {
 }
 
 // Función para obtener los datos de las medidas que han sido revocadas
-function getRevocada($connMedidas, $idResolucion) {
-    $query = "
-        SELECT idRevocada, revocada, observacion, fechaRevocada
-        FROM medidas.revocada
-        WHERE idResolucion = ?";
+function getRevocada($connMedidas, $idInvolucrado) {
+    $query = 
+		"SELECT
+			r.idResolucion,
+			r.idRegistroPrevio,
+			r.observacion,
+			r.fechaResolucion
+		FROM medidas.resolucion r
+		INNER JOIN medidas.registro re ON r.idRegistroPrevio = re.idRegistro
+		INNER JOIN medidas.involucrado i ON i.idInvolucrado = re.idInvolucrado
+		WHERE i.idInvolucrado = ? AND r.idTipoResolucion = 4";
     
-    return executeResolucion($connMedidas, $idResolucion, $query);
+    return executeResolucion($connMedidas, $idInvolucrado, $query);
 }
 
 // Función para ejecutar código con idResolucion en la base de datos
-function executeResolucion($connMedidas, $idResolucion, $query) {
-    $params = [ [&$idResolucion, SQLSRV_PARAM_IN] ];
+function executeResolucion($connMedidas, $idInvolucrado, $query) {
+    $params = [ [&$idInvolucrado, SQLSRV_PARAM_IN] ];
 
     $stmt = sqlsrv_prepare($connMedidas, $query, $params);
 
@@ -987,8 +1020,7 @@ function get_data_medidas_dia($connMedidas, $numeroDia, $diames, $anio, $fiscali
 															  WHERE m.anio = $anio  AND m.mes = $mes AND mp.idEnlace = $idenlace order by m.idMedida desc ";
 		}
 	}elseif($rolUser == 4){
-		$query = "
-		SELECT DISTINCT 
+		$query = "SELECT DISTINCT 
 			m.idMedida
 			,m.nuc
 			,m.idMP
@@ -1355,26 +1387,26 @@ function checkFechaConclusion($fechaConclusion){
 
 function modificarMedidasAplicadas($connMedidas, $idMedida){
 	$query = " SELECT ma.idMedidaAplicada
-												      ,ma.idMedida
-																  ,ma.nuc
-																  ,ma.idCatFraccion
-																  ,CASE 
-																		  WHEN ma.idCatFraccion = 1 THEN 'I'
-																			 WHEN ma.idCatFraccion = 2 THEN 'II'
-																			 WHEN ma.idCatFraccion = 3 THEN 'III'
-																			 WHEN ma.idCatFraccion = 4 THEN 'IV'
-																			 WHEN ma.idCatFraccion = 5 THEN 'V'
-																			 WHEN ma.idCatFraccion = 6 THEN 'VI'
-																			 WHEN ma.idCatFraccion = 7 THEN 'VII'
-																			 WHEN ma.idCatFraccion = 8 THEN 'VIII'
-																			 WHEN ma.idCatFraccion = 9 THEN 'XI'
-																			 WHEN ma.idCatFraccion = 10 THEN 'X'
-																			ELSE 'Sin asignar medida'
-																			END as fraccionAsignada
-																  ,cf.nombre
-															FROM medidas.medidasAplicadas ma
-															INNER JOIN medidas.catFracciones cf ON cf.idCatFraccion = ma.idCatFraccion
-															WHERE idMedida = $idMedida ";
+					,ma.idMedida
+					,ma.nuc
+					,ma.idCatFraccion
+					,CASE 
+							WHEN ma.idCatFraccion = 1 THEN 'I'
+								WHEN ma.idCatFraccion = 2 THEN 'II'
+								WHEN ma.idCatFraccion = 3 THEN 'III'
+								WHEN ma.idCatFraccion = 4 THEN 'IV'
+								WHEN ma.idCatFraccion = 5 THEN 'V'
+								WHEN ma.idCatFraccion = 6 THEN 'VI'
+								WHEN ma.idCatFraccion = 7 THEN 'VII'
+								WHEN ma.idCatFraccion = 8 THEN 'VIII'
+								WHEN ma.idCatFraccion = 9 THEN 'XI'
+								WHEN ma.idCatFraccion = 10 THEN 'X'
+							ELSE 'Sin asignar medida'
+							END as fraccionAsignada
+					,cf.nombre
+			FROM medidas.medidasAplicadas ma
+			INNER JOIN medidas.catFracciones cf ON cf.idCatFraccion = ma.idCatFraccion
+			WHERE idMedida = $idMedida ";
 	$indice = 0;
 	$stmt = sqlsrv_query($connMedidas, $query);
 	while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC ))
@@ -1473,7 +1505,7 @@ function getRegistro ($connMedidas, $idInvolucrado) {
 		i.edad
 	FROM medidas.involucrado i
 	INNER JOIN medidas.registro r ON r.idInvolucrado = i.idInvolucrado
-	WHERE i.idInvolucrado = ?
+	WHERE i.idInvolucrado = ? AND r.vigente = 1
 	";
 
 	$params = array(&$idInvolucrado);
@@ -1493,6 +1525,32 @@ function getRegistro ($connMedidas, $idInvolucrado) {
 		$errors = sqlsrv_errors();
 		return $errors;
 	}	
+}
+
+// Funcion para verificar si hay alguna medida sin involucrados
+function getCheckMedidas ($connMedidas, $idEnlace) {
+	$query = "SELECT 
+			m.idMedida,
+			i.idInvolucrado
+		FROM medidas.medidasProteccion m
+		LEFT JOIN medidas.involucrado i ON i.idMedida = m.idMedida
+		WHERE m.idEnlace = ?
+		AND i.idInvolucrado IS NULL";
+
+	$params = array(&$idEnlace);
+	$stmt = sqlsrv_prepare($connMedidas, $query, $params);
+
+	if ($stmt && sqlsrv_execute($stmt)) {
+		$array = array();		
+		while ($row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC )) {
+			$array [] = $row;
+		}
+		return $array;
+	} else {
+		$errors = sqlsrv_errors();
+		return $errors;
+	}
+
 }
 
 function checkEdad($edad){

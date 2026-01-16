@@ -4,7 +4,7 @@ include("../../../../Conexiones/Conexion.php");
 include("../../../../Conexiones/conexionMedidas.php");
 include("../../../../funcionesMedidasProteccion.php");
 
-$idMedida = isset($_POST['idMedida']) ? $_POST['idMedida'] : null;
+$idInvolucrado = isset($_POST['idInvolucrado']) ? $_POST['idInvolucrado'] : null;
 $fechaConclusion = isset($_POST['fechaConclusion']) ? $_POST['fechaConclusion'] : null;
 
 $fConclusion = date("Y-m-d H:i:s", strtotime($fechaConclusion));
@@ -13,14 +13,11 @@ $query = "
     BEGIN TRANSACTION;
     BEGIN TRY
         -- Actualiza en la primera tabla
-        UPDATE medidas.medidasProteccion
-        SET fechaConclusion = ?
-        WHERE idMedida = ?;
-
-        -- Actualiza en la segunda tabla
-        UPDATE medidas.cuadernoAntecedentes
-        SET fechaConclusion = ?
-        WHERE idMedida = ?;
+        UPDATE r        
+        SET r.fechaConclusion = ?
+        FROM medidas.registro r
+        INNER JOIN medidas.involucrado i ON r.idInvolucrado = i.idInvolucrado
+        WHERE i.idInvolucrado = ? AND r.vigente = 1;
 
         COMMIT;
     END TRY
@@ -35,9 +32,7 @@ $query = "
 
 $params = [
     [&$fConclusion, SQLSRV_PARAM_IN, null, SQLSRV_SQLTYPE_DATETIME],
-    [&$idMedida, SQLSRV_PARAM_IN],
-    [&$fConclusion, SQLSRV_PARAM_IN, null, SQLSRV_SQLTYPE_DATETIME],
-    [&$idMedida, SQLSRV_PARAM_IN]
+    [&$idInvolucrado, SQLSRV_PARAM_IN]
 ];
 
 $stmt = sqlsrv_prepare($connMedidas, $query, $params);
@@ -45,7 +40,7 @@ $stmt = sqlsrv_prepare($connMedidas, $query, $params);
 if ($stmt) {
     $result = sqlsrv_execute($stmt);
     if ($result) {
-        echo json_encode(['first' => 'SI', 'idMedidaUltimo' => $idMedida]);
+        echo json_encode(['first' => 'SI']);
     } else {
         $errors = sqlsrv_errors();
         echo json_encode(['first' => 'NO', 'errors' => $errors]);

@@ -27,6 +27,8 @@ $rolUser = $getRolUser[0][0];
 $checkCarpetas = getCarpetasFaltante($connMedidas);
 $totalPendientes = $checkCarpetas[0][0];
 
+$checkMedidas = getCheckMedidas($connMedidas, $idEnlace);
+
 $idUsuario = $_SESSION['useridIE'];
 
 if(date("l") === "Monday"){ $numeroDia = 1; $diaLetra = "Lunes"; }
@@ -63,13 +65,15 @@ $mesNom = Mes_Nombre($currentmonth);
 					</tr>
 				</table>
 			</div>
-			<?if($rolUser == 1 && $totalPendientes > 0){?>
-			<!--ALERTA CARPETAS PENDIENTES DE ASIGNAR AL MES-->
-	 <div class="alert alert-danger" id="msgAlert">
-			<a href="#" class="alert-link" onclick="modalCheckPendientes(<?echo $rolUser; ?>, <?echo $idEnlace; ?>)">Carpetas pendientes por asignar a Ministerio Publico: </a><label><br><?echo $totalPendientes; ?><br></label>
-		 </div>
-		 <!--ALERTA CARPETAS PENDIENTES DE ASIGNAR AL MES-->
-		<? } ?>
+			<!--ALERTA MEDIDAS SIN INVOLUCRADO-->			
+			<div id="contAlert">
+				<?if(sizeof($checkMedidas) > 0){?>
+				<div class="alert alert-danger" id="msgAlert">
+					<a href="#" class="alert-link" onclick="reloadModalMDP(1, <?= $idEnlace ?>, <?= $checkMedidas[0]['idMedida'] ?>, 0, 0, null, null)">Carpetas pendientes por asignar involucrados: </a><label><br><?= sizeof($checkMedidas); ?><br></label>
+				</div>			
+				<? } ?>				
+			</div>
+			<!--ALERTA MEDIDAS SIN INVOLUCRADO-->
 			<div class="row pad20">
 				<div class="col-xs-6 col-sm-4  col-md-1">
 					<label for="heard">Año:</label><br>

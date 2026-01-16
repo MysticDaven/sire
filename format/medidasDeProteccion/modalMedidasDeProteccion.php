@@ -250,7 +250,7 @@ if (isset($_POST["idMedida"])) {
 			<div class="row">
 				<div class="col-xs-12 col-sm-12  col-md-3">
 					<label for="nOficio">Número de oficio: <span class="aste">(*)</span></label>
-					<input class="form-control" id="nOficio" type="text" onchange="" 
+					<input class="form-control" id="nOficio" type="text"
 						value="<? if ($noVictima > 0) {
 							echo $getRegistroVictima['nOficio'];
 						} ?>"

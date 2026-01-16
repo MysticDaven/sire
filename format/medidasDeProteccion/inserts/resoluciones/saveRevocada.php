@@ -4,9 +4,8 @@ include("../../../../Conexiones/Conexion.php");
 include("../../../../Conexiones/conexionMedidas.php");
 include("../../../../funcionesMedidasProteccion.php");
 
-$idResolucion = isset($_POST['idResolucion']) ? $_POST['idResolucion'] : null;
+$idInvolucrado = isset($_POST['idInvolucrado']) ? $_POST['idInvolucrado'] : null;
 $idMedida = isset($_POST['idMedida']) ? $_POST['idMedida'] : null;
-$revocada = isset($_POST['revocada']) ? $_POST['revocada'] : null;
 $observacion = isset($_POST['observacion']) ? $_POST['observacion'] : null;
 $fecha = isset($_POST['fecha']) ? $_POST['fecha'] : null;
 
@@ -20,11 +19,17 @@ BEGIN
  BEGIN TRY 
   BEGIN TRANSACTION
    SET NOCOUNT ON;
+    DECLARE @idRegistroPrevio INT
 
-     INSERT INTO medidas.revocada (idResolucion, revocada, observacion, fechaRevocada)
-     VALUES (?, ?, ?, ?);
+    SELECT @idRegistroPrevio = r.idRegistro
+    FROM medidas.registro r
+    INNER JOIN medidas.involucrado i ON r.idInvolucrado = i.idInvolucrado
+    WHERE i.idInvolucrado = ? AND r.vigente = 1;
 
-     COMMIT;
+    INSERT INTO medidas.resolucion (idTipoResolucion, idRegistroPrevio, idRegistroPosterior, observacion, fechaResolucion)
+    VALUES (4, @idRegistroPrevio, @idRegistroPrevio, ?, GETDATE());    
+
+    COMMIT;
   END TRY
   BEGIN CATCH
     ROLLBACK TRANSACTION;
@@ -36,10 +41,8 @@ END";
 
 
 $params = array(
-    &$idResolucion, 
-    &$revocada, 
-    &$observacion, 
-    array(&$fechaAcuerdo, SQLSRV_PARAM_IN, null, SQLSRV_SQLTYPE_DATETIME)
+    &$idInvolucrado, 
+    &$observacion
 );
 
 $stmt = sqlsrv_prepare($connMedidas, $query, $params);
